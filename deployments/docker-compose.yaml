@@ -1,0 +1,54 @@
+version: "3"
+
+services:
+  db:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    env_file:
+      - db.env
+    networks:
+      main:
+        aliases:
+          - db
+  migrations:
+    build: ../migrations/.
+    depends_on:
+      - db
+    env_file:
+      - db.env
+    environment:
+      POSTGRES_HOST: db
+    networks:
+      main:
+        aliases:
+          - migrations
+  adminer:
+    image: adminer:latest
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    networks:
+      main:
+        aliases:
+          - adminer
+  proxy:
+    image: nginx:latest
+    volumes:
+      - ../configs/proxy:/etc/nginx/templates
+    ports:
+      - "80:80"
+    links:
+      - adminer:adminer
+    depends_on:
+      - adminer
+    networks:
+      main:
+        aliases:
+          - proxy
+volumes:
+  database:
+networks:
+  main:
+    driver: bridge
