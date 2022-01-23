@@ -4,14 +4,17 @@ CREATE TABLE "stats"
 (
     "slot_id"     integer NOT NULL,
     "creative_id" integer NOT NULL,
+    "segment_id"  integer NOT NULL,
     "impressions" integer NOT NULL,
     "conversions" integer NOT NULL,
-    CONSTRAINT "stats_ID" PRIMARY KEY ("slot_id", "creative_id")
+    CONSTRAINT "stats_ID" PRIMARY KEY ("slot_id", "creative_id", "segment_id")
 );
 ALTER TABLE ONLY "stats"
-    ADD CONSTRAINT "stats_slot_id_fkey" FOREIGN KEY (slot_id) REFERENCES "slot" ("ID") ON DELETE NO ACTION;
+    ADD CONSTRAINT "stats_slot_id_fkey" FOREIGN KEY (slot_id) REFERENCES "slot" ("ID") ON DELETE RESTRICT;
 ALTER TABLE ONLY "stats"
-    ADD CONSTRAINT "stats_creative_id_fkey" FOREIGN KEY (creative_id) REFERENCES "creative" ("ID") ON DELETE NO ACTION;
+    ADD CONSTRAINT "stats_creative_id_fkey" FOREIGN KEY (creative_id) REFERENCES "creative" ("ID") ON DELETE RESTRICT;
+ALTER TABLE ONLY "stats"
+    ADD CONSTRAINT "stats_segment_id_fkey" FOREIGN KEY (segment_id) REFERENCES "segment" ("ID") ON DELETE RESTRICT;
 -- +goose StatementEnd
 
 -- +goose Down

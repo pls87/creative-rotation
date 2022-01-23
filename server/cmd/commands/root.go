@@ -1,7 +1,7 @@
-package crcmd
+package commands
 
 import (
-	"github.com/pls87/creative-rotation/cmd/cr/config"
+	"github.com/pls87/creative-rotation/server/config"
 	"github.com/spf13/cobra"
 )
 

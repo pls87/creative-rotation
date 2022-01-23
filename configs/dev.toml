@@ -1,0 +1,15 @@
+[logger]
+level = "debug"
+
+[db]
+host = "127.0.0.1"
+name = "creatives"
+user = "cr_user"
+password = "password"
+
+[stats]
+interval = 1
+
+[net]
+host = "127.0.0.1"
+port = 8082

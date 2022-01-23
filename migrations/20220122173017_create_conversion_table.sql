@@ -5,13 +5,16 @@ CREATE TABLE "conversion"
     "ID"          serial      NOT NULL,
     "slot_id"     integer     NOT NULL,
     "creative_id" integer     NOT NULL,
+    "segment_id"  integer     NOT NULL,
     "time"        timestamptz NOT NULL,
     CONSTRAINT "conversion_ID" PRIMARY KEY ("ID")
 );
 ALTER TABLE ONLY "conversion"
     ADD CONSTRAINT "conversion_slot_id_fkey" FOREIGN KEY (slot_id) REFERENCES "slot" ("ID") ON DELETE NO ACTION;
 ALTER TABLE ONLY "conversion"
-    ADD CONSTRAINT "conversion_creative_id_fkey" FOREIGN KEY (creative_id) REFERENCES "creative" ("ID") ON DELETE NO ACTION;
+    ADD CONSTRAINT "conversion_creative_id_fkey" FOREIGN KEY (creative_id) REFERENCES "creative" ("ID") ON DELETE RESTRICT;
+ALTER TABLE ONLY "conversion"
+    ADD CONSTRAINT "conversion_segment_id_fkey" FOREIGN KEY (segment_id) REFERENCES "segment" ("ID") ON DELETE RESTRICT;
 -- +goose StatementEnd
 
 -- +goose Down

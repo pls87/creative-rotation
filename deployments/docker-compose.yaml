@@ -3,8 +3,6 @@ version: "3"
 services:
   db:
     image: postgres:latest
-    ports:
-      - "5432:5432"
     env_file:
       - db.env
     networks:
@@ -23,6 +21,21 @@ services:
       main:
         aliases:
           - migrations
+  stats_updater:
+    build:
+      dockerfile: ./build/stats/Dockerfile
+      context: ../.
+    depends_on:
+      - db
+    env_file:
+      - db.env
+    environment:
+      POSTGRES_HOST: db
+      STATS_INTERVAL: 1
+    networks:
+      main:
+        aliases:
+          - stats_updater
   adminer:
     image: adminer:latest
     ports:

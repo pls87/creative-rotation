@@ -1,4 +1,4 @@
-package crcmd
+package commands
 
 import (
 	"encoding/json"

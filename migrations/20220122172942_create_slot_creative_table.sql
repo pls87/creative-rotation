@@ -7,9 +7,9 @@ CREATE TABLE "slot_creative"
     CONSTRAINT "slot_creative_ID" PRIMARY KEY ("slot_id", "creative_id")
 );
 ALTER TABLE ONLY "slot_creative"
-    ADD CONSTRAINT "slot_id_fkey" FOREIGN KEY (slot_id) REFERENCES "slot" ("ID") ON DELETE CASCADE;
+    ADD CONSTRAINT "slot_id_fkey" FOREIGN KEY (slot_id) REFERENCES "slot" ("ID") ON DELETE RESTRICT;
 ALTER TABLE ONLY "slot_creative"
-    ADD CONSTRAINT "creative_id_fkey" FOREIGN KEY (creative_id) REFERENCES "creative" ("ID") ON DELETE CASCADE;
+    ADD CONSTRAINT "creative_id_fkey" FOREIGN KEY (creative_id) REFERENCES "creative" ("ID") ON DELETE RESTRICT;
 -- +goose StatementEnd
 
 -- +goose Down
