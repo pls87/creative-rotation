@@ -21,14 +21,14 @@ var updateStatsCmd = &cobra.Command{
 	Short: "Updates impressions/conversions statistics",
 	Long:  `<Long version desc>`,
 	Run: func(cmd *cobra.Command, args []string) {
-		logg.Infof("[%s] stats updater process starting...", time.Now())
+		logg.Info("stats updater process starting...")
 		defer func() {
-			logg.Infof("[%s] stats updater process finished...", time.Now())
+			logg.Info("stats updater process finished...")
 		}()
 
 		db, err := sqlx.Connect("postgres", cfg.DB.ConnString())
 		if err != nil {
-			logg.Errorf("[%s] Couldn't connect to database to update stats: %s", time.Now(), err)
+			logg.Errorf("Couldn't connect to database to update stats: %s", err)
 		}
 		defer db.Close()
 
@@ -41,12 +41,12 @@ var updateStatsCmd = &cobra.Command{
 		for {
 			select {
 			case <-ticker.C:
-				logg.Infof("[%s]Update Start...", time.Now())
+				logg.Info("Update Start...")
 				err := updateStats(db)
 				if err != nil {
-					logg.Errorf("[%s] ERROR: Couldn't uodate stats: %s", time.Now(), err)
+					logg.Errorf("ERROR: Couldn't uodate stats: %s", err)
 				}
-				logg.Infof("[%s]Update Finished!", time.Now())
+				logg.Info("Update Finished!")
 			case <-ctx.Done():
 				return
 			}
@@ -63,7 +63,7 @@ func updateStats(db *sqlx.DB) error {
 	if err != nil {
 		e := tx.Rollback()
 		if e != nil {
-			logg.Errorf("[%s] ERROR: Failed to rollback transaction: %s", time.Now(), err)
+			logg.Errorf("ERROR: Failed to rollback transaction: %s", err)
 		}
 		return err
 	}
@@ -82,7 +82,7 @@ func updateStats(db *sqlx.DB) error {
 	if err != nil {
 		e := tx.Rollback()
 		if e != nil {
-			logg.Errorf("[%s]ERROR: Failed to rollback transaction: %s", time.Now(), err)
+			logg.Errorf("ERROR: Failed to rollback transaction: %s", err)
 		}
 		return err
 	}
