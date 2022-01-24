@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/pls87/creative-rotation/server/storage/models"
+	"github.com/pls87/creative-rotation/internal/storage/models"
 )
 
 var (

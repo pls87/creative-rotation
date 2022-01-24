@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pls87/creative-rotation/server/storage/basic"
+	"github.com/pls87/creative-rotation/internal/storage/basic"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/pls87/creative-rotation/server/storage/models"
+	"github.com/pls87/creative-rotation/internal/storage/models"
 )
 
 type CreativeRepository struct {

@@ -12,6 +12,6 @@ RUN go mod download
 
 COPY . ${CODE_DIR}
 
-RUN go build -ldflags "$LDFLAGS" -o ${BIN_FILE} ./server/cmd
+RUN go build -ldflags "$LDFLAGS" -o ${BIN_FILE} ./internal/cmd
 
 CMD ${BIN_FILE} update_stats

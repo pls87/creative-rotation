@@ -6,8 +6,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	// init postgres driver.
 	_ "github.com/lib/pq"
-	"github.com/pls87/creative-rotation/server/config"
-	"github.com/pls87/creative-rotation/server/storage/basic"
+	"github.com/pls87/creative-rotation/internal/config"
+	"github.com/pls87/creative-rotation/internal/storage/basic"
 )
 
 type Storage struct {

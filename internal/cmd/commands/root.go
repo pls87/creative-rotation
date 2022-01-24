@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"github.com/pls87/creative-rotation/server/config"
+	"github.com/pls87/creative-rotation/internal/config"
 	"github.com/spf13/cobra"
 )
 
