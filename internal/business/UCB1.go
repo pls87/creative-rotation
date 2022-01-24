@@ -12,8 +12,7 @@ func NextCreative(stats []models.Stats) (creativeId models.ID) {
 	if len(zeroImp) > 0 {
 		return zeroImp[rand.Intn(len(zeroImp))].CreativeID
 	}
-	max := math.Inf(-1)
-	cur := 0.0
+	max, cur := math.Inf(-1), 0.0
 	for _, s := range stats {
 		cur = Value(s, totalImp)
 		if cur > max {

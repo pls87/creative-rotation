@@ -36,6 +36,25 @@ services:
       main:
         aliases:
           - stats_updater
+  api:
+    build:
+      dockerfile: ./build/api/Dockerfile
+      context: ../
+    ports:
+      - "8085:8085"
+    depends_on:
+      - db
+      - migrations
+      - stats_updater
+    env_file:
+      - db.env
+    environment:
+      POSTGRES_HOST: db
+      API_PORT: 8085
+    networks:
+      main:
+        aliases:
+          - api
   adminer:
     image: adminer:latest
     ports:

@@ -14,4 +14,4 @@ COPY . ${CODE_DIR}
 
 RUN go build -ldflags "$LDFLAGS" -o ${BIN_FILE} ./cmd
 
-CMD ${BIN_FILE} update_stats
+CMD ${BIN_FILE} server

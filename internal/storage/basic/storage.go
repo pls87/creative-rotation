@@ -50,5 +50,5 @@ type CreativeRepository interface {
 
 type StatsRepository interface {
 	AllStats(ctx context.Context) ([]models.Stats, error)
-	StatsSlotSegment(ctx context.Context, slotId, segmentId models.ID) (*models.StatsCollection, error)
+	StatsSlotSegment(ctx context.Context, slotId, segmentId models.ID) ([]models.Stats, error)
 }

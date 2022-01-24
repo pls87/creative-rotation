@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/pls87/creative-rotation/internal/cmd/commands"
+	"github.com/pls87/creative-rotation/cmd/commands"
 )
 
 func main() {

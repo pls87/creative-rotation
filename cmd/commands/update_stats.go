@@ -2,7 +2,6 @@ package commands
 
 import (
 	"context"
-	"log"
 	"os/signal"
 	"syscall"
 	"time"
@@ -22,14 +21,14 @@ var updateStatsCmd = &cobra.Command{
 	Short: "Updates impressions/conversions statistics",
 	Long:  `<Long version desc>`,
 	Run: func(cmd *cobra.Command, args []string) {
-		log.Printf("[%s] stats updater process starting...", time.Now())
+		logg.Infof("[%s] stats updater process starting...", time.Now())
 		defer func() {
-			log.Printf("[%s] stats updater process finished...", time.Now())
+			logg.Infof("[%s] stats updater process finished...", time.Now())
 		}()
-		log.Println(cfg.DB.ConnString())
+
 		db, err := sqlx.Connect("postgres", cfg.DB.ConnString())
 		if err != nil {
-			log.Fatalf("[%s] Couldn't connect to database to update stats: %s", time.Now(), err)
+			logg.Errorf("[%s] Couldn't connect to database to update stats: %s", time.Now(), err)
 		}
 		defer db.Close()
 
@@ -42,12 +41,12 @@ var updateStatsCmd = &cobra.Command{
 		for {
 			select {
 			case <-ticker.C:
-				log.Printf("[%s]Update Start...", time.Now())
+				logg.Infof("[%s]Update Start...", time.Now())
 				err := updateStats(db)
 				if err != nil {
-					log.Printf("[%s] ERROR: Couldn't commit transaction: %s", time.Now(), err)
+					logg.Errorf("[%s] ERROR: Couldn't uodate stats: %s", time.Now(), err)
 				}
-				log.Printf("[%s]Update Finished!", time.Now())
+				logg.Infof("[%s]Update Finished!", time.Now())
 			case <-ctx.Done():
 				return
 			}
@@ -58,15 +57,13 @@ var updateStatsCmd = &cobra.Command{
 func updateStats(db *sqlx.DB) error {
 	tx, err := db.Beginx()
 	if err != nil {
-		log.Printf("[%s]ERROR: %s", time.Now(), err)
 		return err
 	}
 	_, err = tx.Exec(`TRUNCATE TABLE "stats"`)
 	if err != nil {
-		log.Printf("[%s]ERROR: %s", time.Now(), err)
 		e := tx.Rollback()
 		if e != nil {
-			log.Printf("[%s] ERROR: Failed to rollback transaction: %s", time.Now(), err)
+			logg.Errorf("[%s] ERROR: Failed to rollback transaction: %s", time.Now(), err)
 		}
 		return err
 	}
@@ -83,10 +80,9 @@ func updateStats(db *sqlx.DB) error {
 	_, err = tx.Exec(query)
 
 	if err != nil {
-		log.Printf("[%s]ERROR: %s", time.Now(), err)
 		e := tx.Rollback()
 		if e != nil {
-			log.Printf("[%s]ERROR: Failed to rollback transaction: %s", time.Now(), err)
+			logg.Errorf("[%s]ERROR: Failed to rollback transaction: %s", time.Now(), err)
 		}
 		return err
 	}
