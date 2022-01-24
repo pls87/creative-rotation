@@ -26,5 +26,6 @@ func (sr *StatsRepository) StatsSlotSegment(ctx context.Context, slotId, segment
 	var stats []models.Stats
 	err := sr.db.SelectContext(ctx, &stats,
 		`SELECT * FROM "stats" WHERE slot_id=? AND segment_id=?`, slotId, segmentId)
+
 	return stats, err
 }
