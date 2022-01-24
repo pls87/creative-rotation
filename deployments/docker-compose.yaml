@@ -65,20 +65,6 @@ services:
       main:
         aliases:
           - adminer
-  proxy:
-    image: nginx:latest
-    volumes:
-      - ../configs/proxy:/etc/nginx/templates
-    ports:
-      - "80:80"
-    links:
-      - adminer:adminer
-    depends_on:
-      - adminer
-    networks:
-      main:
-        aliases:
-          - proxy
 volumes:
   database:
 networks:
