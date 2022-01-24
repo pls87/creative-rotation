@@ -11,17 +11,21 @@ import (
 )
 
 type Storage struct {
-	cfg      config.DBConf
-	db       *sqlx.DB
-	segments *SegmentRepository
-	slots    *SlotRepository
+	cfg       config.DBConf
+	db        *sqlx.DB
+	segments  *SegmentRepository
+	slots     *SlotRepository
+	creatives *CreativeRepository
+	stats     *StatsRepository
 }
 
 func New(cfg config.DBConf) *Storage {
 	return &Storage{
-		segments: &SegmentRepository{},
-		slots:    &SlotRepository{},
-		cfg:      cfg,
+		segments:  &SegmentRepository{},
+		slots:     &SlotRepository{},
+		creatives: &CreativeRepository{},
+		stats:     &StatsRepository{},
+		cfg:       cfg,
 	}
 }
 
@@ -33,12 +37,26 @@ func (s *Storage) Slots() basic.SlotRepository {
 	return s.slots
 }
 
+func (s *Storage) Stats() basic.StatsRepository {
+	return s.stats
+}
+
+func (s *Storage) Creatives() basic.CreativeRepository {
+	return s.creatives
+}
+
 func (s *Storage) Init(ctx context.Context) error {
 	db, err := sqlx.ConnectContext(ctx, "postgres", s.cfg.ConnString())
 	if err == nil {
 		s.db = db
 		s.segments.Init(ctx)
 		s.segments.db = s.db
+		s.creatives.Init(ctx)
+		s.creatives.db = s.db
+		s.slots.Init(ctx)
+		s.slots.db = s.db
+		s.stats.Init(ctx)
+		s.stats.db = s.db
 	}
 	return err
 }

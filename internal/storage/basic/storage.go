@@ -17,6 +17,7 @@ type Storage interface {
 	Creatives() CreativeRepository
 	Slots() SlotRepository
 	Segments() SegmentRepository
+	Stats() StatsRepository
 	Init(ctx context.Context) error
 	Dispose() error
 }
@@ -45,5 +46,9 @@ type CreativeRepository interface {
 	InSlot(ctx context.Context, creativeId, slotId models.ID) (bool, error)
 	TrackImpression(ctx context.Context, creativeId, slotId, segmentId models.ID) error
 	TrackConversion(ctx context.Context, creativeId, slotId, segmentId models.ID) error
-	Stats(ctx context.Context) ([]models.Stats, error)
+}
+
+type StatsRepository interface {
+	AllStats(ctx context.Context) ([]models.Stats, error)
+	StatsSlotSegment(ctx context.Context, slotId, segmentId models.ID) ([]models.Stats, error)
 }

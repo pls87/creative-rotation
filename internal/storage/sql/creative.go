@@ -99,9 +99,3 @@ func (cr *CreativeRepository) TrackConversion(ctx context.Context, creativeId, s
 
 	return err
 }
-
-func (cr *CreativeRepository) Stats(ctx context.Context) ([]models.Stats, error) {
-	var stats []models.Stats
-	err := cr.db.SelectContext(ctx, &stats, `SELECT * FROM "stats"`)
-	return stats, err
-}

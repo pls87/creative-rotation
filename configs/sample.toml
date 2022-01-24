@@ -8,7 +8,7 @@ user = "cr_user"
 password = "password"
 
 [stats]
-interval = 1
+interval = 1 #seconds
 
 [net]
 host = "127.0.0.1"
