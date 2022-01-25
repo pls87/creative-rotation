@@ -78,10 +78,10 @@ func (cr *CreativeRepository) FromSlot(ctx context.Context, creativeId, slotId m
 func (cr *CreativeRepository) InSlot(ctx context.Context, creativeId, slotId models.ID) (bool, error) {
 	rows, err := cr.db.QueryxContext(ctx, `SELECT * FROM "slot_creative" WHERE creative_id = ? AND slot_id = ?`,
 		creativeId, slotId)
-	defer rows.Close()
 	if err != nil {
 		return false, err
 	}
+	defer rows.Close()
 
 	return rows.Next(), err
 }

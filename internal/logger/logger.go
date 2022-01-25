@@ -20,3 +20,9 @@ func New(cfg config.LoggerConf) *Logger {
 	}
 	return log
 }
+
+func (l *Logger) IfError(e error, msg string) {
+	if e != nil {
+		l.Errorf("%s: %s", msg, e)
+	}
+}

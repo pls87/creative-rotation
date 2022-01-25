@@ -49,13 +49,13 @@ func (s *Storage) Init(ctx context.Context) error {
 	db, err := sqlx.ConnectContext(ctx, "postgres", s.cfg.ConnString())
 	if err == nil {
 		s.db = db
-		s.segments.Init(ctx)
+		_ = s.segments.Init(ctx)
 		s.segments.db = s.db
-		s.creatives.Init(ctx)
+		_ = s.creatives.Init(ctx)
 		s.creatives.db = s.db
-		s.slots.Init(ctx)
+		_ = s.slots.Init(ctx)
 		s.slots.db = s.db
-		s.stats.Init(ctx)
+		_ = s.stats.Init(ctx)
 		s.stats.db = s.db
 	}
 	return err

@@ -35,6 +35,9 @@ func NewService(logger *logger.Logger) *Service {
 }
 
 func (s *Service) Noop(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("It works!"))
+	if _, err := w.Write([]byte("It works!")); err == nil {
+		w.WriteHeader(http.StatusOK)
+	} else {
+		s.logger.Errorf("Couldn't write an HTTP response: %s", err)
+	}
 }

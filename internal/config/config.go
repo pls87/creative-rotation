@@ -41,24 +41,24 @@ type APIConf struct {
 func (cfg *Config) bindEnv() {
 	viper.AutomaticEnv()
 	// TODO: this looks strange - need to understand how to unmarshal without listing ENVVARS one-by-one
-	viper.BindEnv("POSTGRES_HOST")
-	viper.BindEnv("POSTGRES_DB")
-	viper.BindEnv("POSTGRES_USER")
-	viper.BindEnv("POSTGRES_PASSWORD")
-	viper.BindEnv("STATS_INTERVAL")
-	viper.BindEnv("API_HOST")
-	viper.BindEnv("API_PORT")
-	viper.Unmarshal(&cfg.Log)
-	viper.Unmarshal(&cfg.DB)
-	viper.Unmarshal(&cfg.API)
-	viper.Unmarshal(&cfg.Stats)
+	_ = viper.BindEnv("POSTGRES_HOST")
+	_ = viper.BindEnv("POSTGRES_DB")
+	_ = viper.BindEnv("POSTGRES_USER")
+	_ = viper.BindEnv("POSTGRES_PASSWORD")
+	_ = viper.BindEnv("STATS_INTERVAL")
+	_ = viper.BindEnv("API_HOST")
+	_ = viper.BindEnv("API_PORT")
+	_ = viper.Unmarshal(&cfg.Log)
+	_ = viper.Unmarshal(&cfg.DB)
+	_ = viper.Unmarshal(&cfg.API)
+	_ = viper.Unmarshal(&cfg.Stats)
 }
 
 func (cfg *Config) bindFile(cfgFile string) {
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
 		if err := viper.ReadInConfig(); err == nil {
-			viper.Unmarshal(cfg)
+			_ = viper.Unmarshal(cfg)
 		}
 	}
 }
