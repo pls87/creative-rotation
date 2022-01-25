@@ -14,7 +14,7 @@ func NextCreative(stats []models.Stats) (creativeId models.ID) {
 	}
 	max, cur := math.Inf(-1), 0.0
 	for _, s := range stats {
-		cur = Value(s, totalImp)
+		cur = valueToMaximize(s, totalImp)
 		if cur > max {
 			max = cur
 			creativeId = s.CreativeID
@@ -23,7 +23,7 @@ func NextCreative(stats []models.Stats) (creativeId models.ID) {
 	return creativeId
 }
 
-func Value(stats models.Stats, totalImp uint64) float64 {
+func valueToMaximize(stats models.Stats, totalImp uint64) float64 {
 	impressions := float64(stats.Impressions)
 	totalImpressions := float64(totalImp)
 	conversions := float64(stats.Conversions)
