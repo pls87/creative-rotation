@@ -11,15 +11,15 @@ import (
 type Service struct {
 	creatives *CreativeService
 	logger    *logger.Logger
+	resp      *response
 }
 
 func NewService(app app.Application, logger *logger.Logger) *Service {
+	resp := &response{logger: logger}
 	return &Service{
-		creatives: &CreativeService{
-			logger:      logger,
-			creativeApp: app.Creatives(),
-		},
-		logger: logger,
+		creatives: &CreativeService{logger: logger, creativeApp: app.Creatives(), resp: resp},
+		logger:    logger,
+		resp:      resp,
 	}
 }
 
@@ -28,9 +28,5 @@ func (s *Service) Creatives() *CreativeService {
 }
 
 func (s *Service) Noop(w http.ResponseWriter, r *http.Request) {
-	if _, err := w.Write([]byte("It works!")); err == nil {
-		w.WriteHeader(http.StatusOK)
-	} else {
-		s.logger.Errorf("Couldn't write an HTTP response: %s", err)
-	}
+	s.resp.text(r.Context(), w, "It Works!")
 }

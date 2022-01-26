@@ -38,7 +38,7 @@ type SlotRepository interface {
 
 type CreativeRepository interface {
 	Init(ctx context.Context) error
-	All(ctx context.Context) ([]models.Creative, error)
+	All(ctx context.Context) (models.CreativeCollection, error)
 	Create(ctx context.Context, c models.Creative) (added models.Creative, err error)
 	Delete(ctx context.Context, id models.ID) error
 	ToSlot(ctx context.Context, creativeId, slotId models.ID) error

@@ -12,7 +12,7 @@ import (
 )
 
 type CreativeApplication interface {
-	All(ctx context.Context) ([]models.Creative, error)
+	All(ctx context.Context) (models.CreativeCollection, error)
 	New(ctx context.Context, c models.Creative) (created models.Creative, err error)
 	AddToSlot(ctx context.Context, creativeId, slotId models.ID) error
 	RemoveFromSlot(ctx context.Context, creativeId, slotId models.ID) error
@@ -25,7 +25,7 @@ type CreativeApp struct {
 	storage basic.Storage
 }
 
-func (a *CreativeApp) All(ctx context.Context) (created []models.Creative, err error) {
+func (a *CreativeApp) All(ctx context.Context) (collection models.CreativeCollection, err error) {
 	return a.storage.Creatives().All(ctx)
 }
 

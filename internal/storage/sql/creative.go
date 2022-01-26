@@ -19,11 +19,11 @@ func (cr *CreativeRepository) Init(ctx context.Context) error {
 	return nil
 }
 
-func (cr *CreativeRepository) All(ctx context.Context) ([]models.Creative, error) {
+func (cr *CreativeRepository) All(ctx context.Context) (models.CreativeCollection, error) {
 	var creatives []models.Creative
 	err := cr.db.SelectContext(ctx, &creatives, `SELECT * FROM "creative"`)
 
-	return creatives, err
+	return models.CreativeCollection{Creatives: creatives}, err
 }
 
 func (cr *CreativeRepository) Create(ctx context.Context, c models.Creative) (added models.Creative, err error) {

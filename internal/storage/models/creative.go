@@ -3,8 +3,12 @@ package models
 import "time"
 
 type Creative struct {
-	ID   ID     `db:"ID"`
-	Desc string `db:"description"`
+	ID   ID     `db:"ID" json:"id"`
+	Desc string `db:"description" json:"desc"`
+}
+
+type CreativeCollection struct {
+	Creatives []Creative `db:"description" json:"creatives"`
 }
 
 type SlotCreative struct {

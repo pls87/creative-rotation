@@ -10,12 +10,16 @@ import (
 type CreativeService struct {
 	logger      *logger.Logger
 	creativeApp app.CreativeApplication
+	resp        *response
 }
 
 func (s *CreativeService) All(w http.ResponseWriter, r *http.Request) {
-	if _, err := w.Write([]byte("All creatives!")); err == nil {
-		w.WriteHeader(http.StatusOK)
-	} else {
-		s.logger.Errorf("Couldn't write an HTTP response: %s", err)
+	ctx := r.Context()
+	creatives, err := s.creativeApp.All(ctx)
+	if err != nil {
+		s.resp.internalServerError(ctx, w, "Unexpected error while getting creatives from storage", err)
+		return
 	}
+
+	s.resp.json(ctx, w, creatives)
 }
