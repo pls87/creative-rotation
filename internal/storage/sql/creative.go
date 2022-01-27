@@ -19,11 +19,11 @@ func (cr *CreativeRepository) Init(ctx context.Context) error {
 	return nil
 }
 
-func (cr *CreativeRepository) All(ctx context.Context) (models.CreativeCollection, error) {
+func (cr *CreativeRepository) All(ctx context.Context) ([]models.Creative, error) {
 	var creatives []models.Creative
 	err := cr.db.SelectContext(ctx, &creatives, `SELECT * FROM "creative"`)
 
-	return models.CreativeCollection{Creatives: creatives}, err
+	return creatives, err
 }
 
 func (cr *CreativeRepository) Create(ctx context.Context, c models.Creative) (added models.Creative, err error) {
@@ -86,16 +86,16 @@ func (cr *CreativeRepository) InSlot(ctx context.Context, creativeId, slotId mod
 	return rows.Next(), err
 }
 
-func (cr *CreativeRepository) TrackImpression(ctx context.Context, creativeId, slotId, segmentId models.ID) error {
+func (cr *CreativeRepository) TrackImpression(ctx context.Context, imp models.Impression) error {
 	query := `INSERT INTO "impression" (creative_id, slot_id, segment_id, time) VALUES (?, ?, ?, ?)`
-	_, err := cr.db.ExecContext(ctx, query, creativeId, slotId, segmentId, time.Now())
+	_, err := cr.db.ExecContext(ctx, query, imp.CreativeID, imp.SlotID, imp.SegmentID, time.Now())
 
 	return err
 }
 
-func (cr *CreativeRepository) TrackConversion(ctx context.Context, creativeId, slotId, segmentId models.ID) error {
+func (cr *CreativeRepository) TrackConversion(ctx context.Context, conversion models.Conversion) error {
 	query := `INSERT INTO "conversion" (creative_id, slot_id, segment_id, time) VALUES (?, ?, ?, ?)`
-	_, err := cr.db.ExecContext(ctx, query, creativeId, slotId, segmentId, time.Now())
+	_, err := cr.db.ExecContext(ctx, query, conversion.CreativeID, conversion.SlotID, conversion.SegmentID, time.Now())
 
 	return err
 }

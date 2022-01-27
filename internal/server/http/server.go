@@ -35,8 +35,13 @@ func NewServer(logger *logger.Logger, app app.Application, cfg config.APIConf) *
 func (s *Server) Start(ctx context.Context) error {
 	mux := mux2.NewRouter()
 
-	mux.HandleFunc("/noop", s.service.Noop)
-	mux.HandleFunc("/creatives", s.service.Creatives().All)
+	mux.HandleFunc("/noop", s.service.Noop).Methods("GET")
+	mux.HandleFunc("/creative", s.service.Creatives().All).Methods("GET")
+	mux.HandleFunc("/creative", s.service.Creatives().New).Methods("POST")
+	mux.HandleFunc("/creative/{id:[0-9]+}/slot", s.service.Creatives().AddToSlot).Methods("POST")
+	mux.HandleFunc("/creative/{id:[0-9]+}/slot", s.service.Creatives().RemoveFromSlot).Methods("DELETE")
+	mux.HandleFunc("/conversion", s.service.Creatives().TrackConversion).Methods("POST")
+	mux.HandleFunc("/creative/next", s.service.Creatives().Next).Methods("GET")
 
 	s.httpServer = &http.Server{
 		Addr:    net.JoinHostPort(s.cfg.Host, strconv.Itoa(s.cfg.Port)),

@@ -7,10 +7,6 @@ type Creative struct {
 	Desc string `db:"description" json:"desc"`
 }
 
-type CreativeCollection struct {
-	Creatives []Creative `db:"description" json:"creatives"`
-}
-
 type SlotCreative struct {
 	SlotID     ID `db:"slot_id"`
 	CreativeID ID `db:"creative_id"`

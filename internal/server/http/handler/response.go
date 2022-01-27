@@ -17,6 +17,10 @@ func (eh *response) httpError(ctx context.Context, w http.ResponseWriter, status
 	http.Error(w, msg, status)
 }
 
+func (eh *response) badRequest(ctx context.Context, w http.ResponseWriter, msg string, err error) {
+	eh.httpError(ctx, w, http.StatusBadRequest, msg, err)
+}
+
 func (eh *response) internalServerError(ctx context.Context, w http.ResponseWriter, msg string, err error) {
 	eh.httpError(ctx, w, http.StatusInternalServerError, msg, err)
 }
