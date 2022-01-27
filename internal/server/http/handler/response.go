@@ -33,7 +33,6 @@ func (eh *response) json(ctx context.Context, w http.ResponseWriter, v interface
 	if err != nil {
 		eh.internalServerError(ctx, w, "failed to write response body", err)
 	}
-	w.WriteHeader(http.StatusOK)
 }
 
 func (eh *response) text(ctx context.Context, w http.ResponseWriter, msg string) {
@@ -41,5 +40,4 @@ func (eh *response) text(ctx context.Context, w http.ResponseWriter, msg string)
 	if err != nil {
 		eh.internalServerError(ctx, w, "failed to write response body", err)
 	}
-	w.WriteHeader(http.StatusOK)
 }

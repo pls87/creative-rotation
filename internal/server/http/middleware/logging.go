@@ -27,8 +27,19 @@ func (rw *StatusResponseWriter) Status() int {
 }
 
 func (rw *StatusResponseWriter) WriteHeader(code int) {
-	rw.status = code
 	rw.ResponseWriter.WriteHeader(code)
+	if rw.status != 0 {
+		return
+	}
+	rw.status = code
+}
+
+func (rw *StatusResponseWriter) Write(bts []byte) (n int, err error) {
+	if rw.status == 0 {
+		rw.WriteHeader(http.StatusOK)
+	}
+
+	return rw.ResponseWriter.Write(bts)
 }
 
 type LoggingMiddleware struct {
