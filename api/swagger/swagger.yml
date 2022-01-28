@@ -1,5 +1,11 @@
-consumes:
-  - io.goswagger.examples.cr.v1+json
+basePath: /cr/
+schemes:
+  - http
+swagger: "2.0"
+info:
+  description: Desc here
+  title: creative rotation
+  version: 1.0.0
 definitions:
   creative:
     type: object
@@ -8,7 +14,7 @@ definitions:
         type: integer
         format: int64
         readOnly: true
-      description:
+      desc:
         type: string
         minLength: 1
   slot:
@@ -18,7 +24,7 @@ definitions:
         type: integer
         format: int64
         readOnly: true
-      description:
+      desc:
         type: string
         minLength: 1
   segment:
@@ -28,7 +34,7 @@ definitions:
         type: integer
         format: int64
         readOnly: true
-      description:
+      desc:
         type: string
         minLength: 1
   conversion:
@@ -65,10 +71,6 @@ definitions:
         format: int64
       slot_id:
         type: integer
-info:
-  description: Desc here
-  title: creative rotatation
-  version: 1.0.0
 paths:
   /creative:
     get:
@@ -96,7 +98,6 @@ paths:
         200:
           description: creates new creative
           schema:
-            type: object
             $ref: "#/definitions/creative"
   /creative/{id}/slot:
     parameters:
@@ -110,7 +111,6 @@ paths:
         name: slot
         description: The slot to add creative to.
         schema:
-          type: object
           $ref: "#/definitions/slot"
     post:
       tags:
@@ -119,7 +119,6 @@ paths:
         200:
           description: adds creative to slot
           schema:
-            type: object
             $ref: "#/definitions/slot-creative"
     delete:
       tags:
@@ -135,7 +134,6 @@ paths:
         200:
           description: returns the next creative to show in slot for segment
           schema:
-            type: object
             $ref: "#/definitions/creative"
   /conversion:
     post:
@@ -152,7 +150,6 @@ paths:
         200:
           description: tracks new conversion for creative/slot/segment
           schema:
-            type: object
             $ref: "#/definitions/conversion"
   /slot:
     get:
@@ -179,10 +176,5 @@ paths:
         200:
           description: creates new slot
           schema:
-            type: object
             $ref: "#/definitions/slot"
-produces:
-  - io.goswagger.examples.cr.v1+json
-schemes:
-  - http
-swagger: "2.0"
+

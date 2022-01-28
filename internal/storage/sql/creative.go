@@ -27,11 +27,11 @@ func (cr *CreativeRepository) All(ctx context.Context) ([]models.Creative, error
 }
 
 func (cr *CreativeRepository) Create(ctx context.Context, c models.Creative) (added models.Creative, err error) {
-	query := `INSERT INTO "creative" (description) VALUES ('?')`
-	res, err := cr.db.ExecContext(ctx, query, c.Desc)
+	query := `INSERT INTO "creative" (description) VALUES ($1) RETURNING "ID"`
+	lastInsertId := 0
+	err = cr.db.QueryRowxContext(ctx, query, c.Desc).Scan(&lastInsertId)
 	if err == nil {
-		id, _ := res.LastInsertId()
-		c.ID = models.ID(id)
+		c.ID = models.ID(lastInsertId)
 	}
 
 	return c, err
