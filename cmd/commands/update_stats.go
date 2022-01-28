@@ -41,12 +41,10 @@ var updateStatsCmd = &cobra.Command{
 		for {
 			select {
 			case <-ticker.C:
-				logg.Info("Update Start...")
 				err := updateStats(db)
 				if err != nil {
-					logg.Errorf("ERROR: Couldn't uodate stats: %s", err)
+					logg.Errorf("Couldn't uodate stats: %s", err)
 				}
-				logg.Info("Update Finished!")
 			case <-ctx.Done():
 				return
 			}
@@ -63,7 +61,7 @@ func updateStats(db *sqlx.DB) error {
 	if err != nil {
 		e := tx.Rollback()
 		if e != nil {
-			logg.Errorf("ERROR: Failed to rollback transaction: %s", err)
+			logg.Errorf("Failed to rollback transaction: %s", err)
 		}
 		return err
 	}
@@ -82,7 +80,7 @@ func updateStats(db *sqlx.DB) error {
 	if err != nil {
 		e := tx.Rollback()
 		if e != nil {
-			logg.Errorf("ERROR: Failed to rollback transaction: %s", err)
+			logg.Errorf("Failed to rollback transaction: %s", err)
 		}
 		return err
 	}

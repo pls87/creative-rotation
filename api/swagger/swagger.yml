@@ -1,0 +1,188 @@
+consumes:
+  - io.goswagger.examples.cr.v1+json
+definitions:
+  creative:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        readOnly: true
+      description:
+        type: string
+        minLength: 1
+  slot:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        readOnly: true
+      description:
+        type: string
+        minLength: 1
+  segment:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        readOnly: true
+      description:
+        type: string
+        minLength: 1
+  conversion:
+    type: object
+    required:
+      - creative_id
+      - slot_id
+      - segment_id
+    properties:
+      id:
+        type: integer
+        format: int64
+        readOnly: true
+      creative_id:
+        type: integer
+        format: int64
+      slot_id:
+        type: integer
+        format: int64
+      segment_id:
+        type: integer
+        format: int64
+      time:
+        type: string
+        format: date-time
+  slot-creative:
+    type: object
+    required:
+      - creative_id
+      - slot_id
+    properties:
+      creative_id:
+        type: integer
+        format: int64
+      slot_id:
+        type: integer
+info:
+  description: Desc here
+  title: creative rotatation
+  version: 1.0.0
+paths:
+  /creative:
+    get:
+      tags:
+        - creatives
+      responses:
+        200:
+          description: list the creatives
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/creative"
+    post:
+      tags:
+        - creatives
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: creative
+          description: The creative to create.
+          schema:
+            $ref: "#/definitions/creative"
+      responses:
+        200:
+          description: creates new creative
+          schema:
+            type: object
+            $ref: "#/definitions/creative"
+  /creative/{id}/slot:
+    parameters:
+      - in: path
+        name: id
+        description: Creative ID
+        required: true
+        type: integer
+        format: int64
+      - in: body
+        name: slot
+        description: The slot to add creative to.
+        schema:
+          type: object
+          $ref: "#/definitions/slot"
+    post:
+      tags:
+        - creatives
+      responses:
+        200:
+          description: adds creative to slot
+          schema:
+            type: object
+            $ref: "#/definitions/slot-creative"
+    delete:
+      tags:
+        - creatives
+      responses:
+        200:
+          description: removes creative from slot
+  /creative/next:
+    get:
+      tags:
+        - creatives
+      responses:
+        200:
+          description: returns the next creative to show in slot for segment
+          schema:
+            type: object
+            $ref: "#/definitions/creative"
+  /conversion:
+    post:
+      tags:
+        - creatives
+      parameters:
+        - in: body
+          name: conversion
+          description: The conversion params.
+          schema:
+            type: object
+            $ref: "#/definitions/conversion"
+      responses:
+        200:
+          description: tracks new conversion for creative/slot/segment
+          schema:
+            type: object
+            $ref: "#/definitions/conversion"
+  /slot:
+    get:
+      tags:
+        - slots
+      responses:
+        200:
+          description: list the slots
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/slot"
+    post:
+      tags:
+        - slots
+      parameters:
+        - in: body
+          name: slot
+          description: The slot to add
+          schema:
+            type: object
+            $ref: "#/definitions/slot"
+      responses:
+        200:
+          description: creates new slot
+          schema:
+            type: object
+            $ref: "#/definitions/slot"
+produces:
+  - io.goswagger.examples.cr.v1+json
+schemes:
+  - http
+swagger: "2.0"
