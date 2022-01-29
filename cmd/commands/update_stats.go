@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"os"
 	"os/signal"
 	"syscall"
 	"time"
@@ -29,6 +30,7 @@ var updateStatsCmd = &cobra.Command{
 		db, err := sqlx.Connect("postgres", cfg.DB.ConnString())
 		if err != nil {
 			logg.Errorf("Couldn't connect to database to update stats: %s", err)
+			os.Exit(1)
 		}
 		defer db.Close()
 
