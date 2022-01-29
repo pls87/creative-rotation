@@ -71,6 +71,7 @@ definitions:
         format: int64
       slot_id:
         type: integer
+        format: int64
 paths:
   /creative:
     get:
@@ -78,11 +79,15 @@ paths:
         - creatives
       responses:
         200:
-          description: list the creatives
+          description: list all creatives
           schema:
-            type: array
-            items:
-              $ref: "#/definitions/creative"
+            type: object
+            properties:
+              creatives:
+                type: array
+                items:
+                  $ref: "#/definitions/creative"
+
     post:
       tags:
         - creatives
@@ -109,7 +114,7 @@ paths:
         format: int64
       - in: body
         name: slot
-        description: The slot to add creative to.
+        description: The slot to add/remove creative to/from.
         schema:
           $ref: "#/definitions/slot"
     post:
@@ -159,9 +164,12 @@ paths:
         200:
           description: list the slots
           schema:
-            type: array
-            items:
-              $ref: "#/definitions/slot"
+            type: object
+            properties:
+              slots:
+                type: array
+                items:
+                  $ref: "#/definitions/slot"
     post:
       tags:
         - slots
@@ -177,4 +185,33 @@ paths:
           description: creates new slot
           schema:
             $ref: "#/definitions/slot"
+  /segment:
+    get:
+      tags:
+        - segments
+      responses:
+        200:
+          description: list the segments
+          schema:
+            type: object
+            properties:
+              slots:
+                type: array
+                items:
+                  $ref: "#/definitions/segment"
+    post:
+      tags:
+        - slots
+      parameters:
+        - in: body
+          name: slot
+          description: The segment to add
+          schema:
+            type: object
+            $ref: "#/definitions/segment"
+      responses:
+        200:
+          description: creates new segment
+          schema:
+            $ref: "#/definitions/segment"
 
