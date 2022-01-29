@@ -24,7 +24,7 @@ var runServerCmd = &cobra.Command{
 	Long:  `<Long version desc>`,
 	Run: func(cmd *cobra.Command, args []string) {
 		storage := storage.New(cfg.DB)
-		cr := app.New(logg, storage, cfg)
+		cr := app.New(logg, storage)
 
 		server := http.NewServer(logg, cr, cfg.API)
 

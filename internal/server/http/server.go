@@ -42,6 +42,8 @@ func (s *Server) Start(ctx context.Context) error {
 	mux.HandleFunc("/creative/{id:[0-9]+}/slot", s.service.Creatives().RemoveFromSlot).Methods("DELETE")
 	mux.HandleFunc("/conversion", s.service.Creatives().TrackConversion).Methods("POST")
 	mux.HandleFunc("/creative/next", s.service.Creatives().Next).Methods("GET")
+	mux.HandleFunc("/slot", s.service.Slots().All).Methods("GET")
+	mux.HandleFunc("/slot", s.service.Slots().New).Methods("POST")
 
 	s.httpServer = &http.Server{
 		Addr:    net.JoinHostPort(s.cfg.Host, strconv.Itoa(s.cfg.Port)),

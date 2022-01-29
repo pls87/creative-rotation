@@ -45,7 +45,7 @@ var updateStatsCmd = &cobra.Command{
 			case <-ticker.C:
 				err := updateStats(db)
 				if err != nil {
-					logg.Errorf("Couldn't uodate stats: %s", err)
+					logg.Errorf("Couldn't update stats: %s", err)
 				}
 			case <-ctx.Done():
 				return
