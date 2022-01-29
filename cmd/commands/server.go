@@ -55,7 +55,7 @@ var runServerCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		logg.Info("calendar is running...")
+		logg.Info("app is running...")
 
 		if err := server.Start(ctx); err != nil {
 			logg.Error("failed to start http internal: " + err.Error())

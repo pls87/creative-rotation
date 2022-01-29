@@ -38,7 +38,7 @@ func (cr *CreativeRepository) Create(ctx context.Context, c models.Creative) (ad
 }
 
 func (cr *CreativeRepository) Delete(ctx context.Context, id models.ID) error {
-	res, err := cr.db.ExecContext(ctx, `DELETE FROM "creative" WHERE ID=?`, id)
+	res, err := cr.db.ExecContext(ctx, `DELETE FROM "creative" WHERE "ID"=$1`, id)
 	if err == nil {
 		if affected, _ := res.RowsAffected(); affected == 0 {
 			return fmt.Errorf("DELETE: creative id=%d: %w", id, basic.ErrDoesNotExist)
@@ -48,7 +48,7 @@ func (cr *CreativeRepository) Delete(ctx context.Context, id models.ID) error {
 }
 
 func (cr *CreativeRepository) ToSlot(ctx context.Context, creativeId, slotId models.ID) error {
-	query := `INSERT INTO "slot_creative" (creative_id, slot_id) VALUES (?, ?)`
+	query := `INSERT INTO "slot_creative" (creative_id, slot_id) VALUES ($1, $2)`
 	res, err := cr.db.ExecContext(ctx, query, creativeId, slotId)
 	if err != nil {
 		return err
@@ -62,7 +62,7 @@ func (cr *CreativeRepository) ToSlot(ctx context.Context, creativeId, slotId mod
 }
 
 func (cr *CreativeRepository) FromSlot(ctx context.Context, creativeId, slotId models.ID) error {
-	res, err := cr.db.ExecContext(ctx, `DELETE FROM "slot_creative" WHERE creative_id = ? AND slot_id=?`,
+	res, err := cr.db.ExecContext(ctx, `DELETE FROM "slot_creative" WHERE creative_id = $1 AND slot_id=$2`,
 		creativeId, slotId)
 	if err != nil {
 		return err
@@ -76,7 +76,7 @@ func (cr *CreativeRepository) FromSlot(ctx context.Context, creativeId, slotId m
 }
 
 func (cr *CreativeRepository) InSlot(ctx context.Context, creativeId, slotId models.ID) (bool, error) {
-	rows, err := cr.db.QueryxContext(ctx, `SELECT * FROM "slot_creative" WHERE creative_id = ? AND slot_id = ?`,
+	rows, err := cr.db.QueryxContext(ctx, `SELECT * FROM "slot_creative" WHERE creative_id = $1 AND slot_id = $2`,
 		creativeId, slotId)
 	if err != nil {
 		return false, err
@@ -87,14 +87,14 @@ func (cr *CreativeRepository) InSlot(ctx context.Context, creativeId, slotId mod
 }
 
 func (cr *CreativeRepository) TrackImpression(ctx context.Context, imp models.Impression) error {
-	query := `INSERT INTO "impression" (creative_id, slot_id, segment_id, time) VALUES (?, ?, ?, ?)`
+	query := `INSERT INTO "impression" (creative_id, slot_id, segment_id, time) VALUES ($1, $2, $3, $4)`
 	_, err := cr.db.ExecContext(ctx, query, imp.CreativeID, imp.SlotID, imp.SegmentID, time.Now())
 
 	return err
 }
 
 func (cr *CreativeRepository) TrackConversion(ctx context.Context, conversion models.Conversion) error {
-	query := `INSERT INTO "conversion" (creative_id, slot_id, segment_id, time) VALUES (?, ?, ?, ?)`
+	query := `INSERT INTO "conversion" (creative_id, slot_id, segment_id, time) VALUES ($1, $2, $3, $4)`
 	_, err := cr.db.ExecContext(ctx, query, conversion.CreativeID, conversion.SlotID, conversion.SegmentID, time.Now())
 
 	return err

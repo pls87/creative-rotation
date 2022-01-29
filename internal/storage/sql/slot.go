@@ -26,18 +26,17 @@ func (sr *SlotRepository) All(ctx context.Context) ([]models.Slot, error) {
 }
 
 func (sr *SlotRepository) Create(ctx context.Context, s models.Slot) (added models.Slot, err error) {
-	query := `INSERT INTO "slot" (description) VALUES ('?')`
-	res, err := sr.db.ExecContext(ctx, query, s.Desc)
+	query := `INSERT INTO "slot" (description) VALUES ($1) RETURNING "ID"`
+	lastInsertId := 0
+	err = sr.db.QueryRowxContext(ctx, query, s.Desc).Scan(&lastInsertId)
 	if err == nil {
-		id, _ := res.LastInsertId()
-		s.ID = models.ID(id)
+		s.ID = models.ID(lastInsertId)
 	}
-
 	return s, err
 }
 
 func (sr *SlotRepository) Delete(ctx context.Context, id models.ID) error {
-	res, err := sr.db.ExecContext(ctx, `DELETE FROM "slot" WHERE ID=?`, id)
+	res, err := sr.db.ExecContext(ctx, `DELETE FROM "slot" WHERE "ID"=$1`, id)
 	if err == nil {
 		if affected, _ := res.RowsAffected(); affected == 0 {
 			return fmt.Errorf("DELETE: slot id=%d: %w", id, basic.ErrDoesNotExist)

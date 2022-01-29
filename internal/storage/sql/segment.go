@@ -26,18 +26,17 @@ func (sr *SegmentRepository) All(ctx context.Context) ([]models.Segment, error) 
 }
 
 func (sr *SegmentRepository) Create(ctx context.Context, s models.Segment) (added models.Segment, err error) {
-	query := `INSERT INTO "segment" (description) VALUES ('?')`
-	res, err := sr.db.ExecContext(ctx, query, s.Desc)
+	query := `INSERT INTO "segment" (description) VALUES ($1) RETURNING "ID"`
+	lastInsertId := 0
+	err = sr.db.QueryRowxContext(ctx, query, s.Desc).Scan(&lastInsertId)
 	if err == nil {
-		id, _ := res.LastInsertId()
-		s.ID = models.ID(id)
+		s.ID = models.ID(lastInsertId)
 	}
-
 	return s, err
 }
 
 func (sr *SegmentRepository) Delete(ctx context.Context, id models.ID) error {
-	res, err := sr.db.ExecContext(ctx, `DELETE FROM "segment" WHERE ID=?`, id)
+	res, err := sr.db.ExecContext(ctx, `DELETE FROM "segment" WHERE "ID"=$1`, id)
 	if err == nil {
 		if affected, _ := res.RowsAffected(); affected == 0 {
 			return fmt.Errorf("DELETE: segment id=%d: %w", id, basic.ErrDoesNotExist)
