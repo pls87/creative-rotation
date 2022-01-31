@@ -3,9 +3,8 @@ package sql
 import (
 	"context"
 
-	"github.com/pls87/creative-rotation/internal/storage/models"
-
 	"github.com/jmoiron/sqlx"
+	"github.com/pls87/creative-rotation/internal/storage/models"
 )
 
 type StatsRepository struct {
@@ -22,10 +21,10 @@ func (sr *StatsRepository) AllStats(ctx context.Context) ([]models.Stats, error)
 	return stats, err
 }
 
-func (sr *StatsRepository) StatsSlotSegment(ctx context.Context, slotId, segmentId models.ID) ([]models.Stats, error) {
+func (sr *StatsRepository) StatsSlotSegment(ctx context.Context, slotID, segmentID models.ID) ([]models.Stats, error) {
 	var stats []models.Stats
 	err := sr.db.SelectContext(ctx, &stats,
-		`SELECT * FROM "stats" WHERE slot_id=$1 AND segment_id=$2`, slotId, segmentId)
+		`SELECT * FROM "stats" WHERE slot_id=$1 AND segment_id=$2`, slotID, segmentID)
 
 	return stats, err
 }

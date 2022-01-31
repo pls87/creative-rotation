@@ -6,10 +6,11 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-	// init postgres driver.
-	_ "github.com/lib/pq"
 
 	"github.com/jmoiron/sqlx"
+
+	// init postgres driver.
+	_ "github.com/lib/pq"
 	"github.com/spf13/cobra"
 )
 

@@ -1,13 +1,13 @@
+//nolint: dupl
 package sql
 
 import (
 	"context"
 	"fmt"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/pls87/creative-rotation/internal/storage/basic"
 	"github.com/pls87/creative-rotation/internal/storage/models"
-
-	"github.com/jmoiron/sqlx"
 )
 
 type SegmentRepository struct {
@@ -27,10 +27,10 @@ func (sr *SegmentRepository) All(ctx context.Context) ([]models.Segment, error) 
 
 func (sr *SegmentRepository) Create(ctx context.Context, s models.Segment) (added models.Segment, err error) {
 	query := `INSERT INTO "segment" (description) VALUES ($1) RETURNING "ID"`
-	lastInsertId := 0
-	err = sr.db.QueryRowxContext(ctx, query, s.Desc).Scan(&lastInsertId)
+	lastInsertID := 0
+	err = sr.db.QueryRowxContext(ctx, query, s.Desc).Scan(&lastInsertID)
 	if err == nil {
-		s.ID = models.ID(lastInsertId)
+		s.ID = models.ID(lastInsertID)
 	}
 	return s, err
 }

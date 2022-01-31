@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/pls87/creative-rotation/internal/app"
-
 	"github.com/pls87/creative-rotation/internal/logger"
 )
 

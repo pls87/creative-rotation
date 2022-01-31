@@ -7,11 +7,9 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
-
-	"github.com/pls87/creative-rotation/internal/storage/models"
-
 	"github.com/pls87/creative-rotation/internal/app"
 	"github.com/pls87/creative-rotation/internal/logger"
+	"github.com/pls87/creative-rotation/internal/storage/models"
 )
 
 type CreativeService struct {
@@ -53,16 +51,16 @@ func (s *CreativeService) New(w http.ResponseWriter, r *http.Request) {
 func (s *CreativeService) handleCreativeParams(w http.ResponseWriter, r *http.Request) (id models.ID, ok bool) {
 	vars := mux.Vars(r)
 
-	creativeId, e := strconv.Atoi(vars["id"])
-	if e != nil || creativeId <= 0 {
+	creativeID, e := strconv.Atoi(vars["id"])
+	if e != nil || creativeID <= 0 {
 		s.resp.badRequest(r.Context(), w, "malformed creative id", e)
 		return 0, false
 	}
 
-	return models.ID(creativeId), true
+	return models.ID(creativeID), true
 }
 
-func (s *CreativeService) handleSlotParams(w http.ResponseWriter, r *http.Request) (slotId models.ID, ok bool) {
+func (s *CreativeService) handleSlotParams(w http.ResponseWriter, r *http.Request) (slotID models.ID, ok bool) {
 	var slot models.Slot
 	err := json.NewDecoder(r.Body).Decode(&slot)
 	if err != nil || slot.ID <= 0 {
@@ -74,38 +72,38 @@ func (s *CreativeService) handleSlotParams(w http.ResponseWriter, r *http.Reques
 }
 
 func (s *CreativeService) AddToSlot(w http.ResponseWriter, r *http.Request) {
-	var creativeId, slotId models.ID
+	var creativeID, slotID models.ID
 	var ok bool
-	if creativeId, ok = s.handleCreativeParams(w, r); !ok {
+	if creativeID, ok = s.handleCreativeParams(w, r); !ok {
 		return
 	}
-	if slotId, ok = s.handleSlotParams(w, r); !ok {
+	if slotID, ok = s.handleSlotParams(w, r); !ok {
 		return
 	}
 
 	ctx := r.Context()
-	err := s.creativeApp.AddToSlot(ctx, creativeId, slotId)
+	err := s.creativeApp.AddToSlot(ctx, creativeID, slotID)
 	if err != nil {
 		s.resp.internalServerError(ctx, w, "Unexpected error while adding creative to slot", err)
 		return
 	}
 
-	res := models.SlotCreative{SlotID: slotId, CreativeID: creativeId}
+	res := models.SlotCreative{SlotID: slotID, CreativeID: creativeID}
 	s.resp.json(ctx, w, res)
 }
 
 func (s *CreativeService) RemoveFromSlot(w http.ResponseWriter, r *http.Request) {
-	var creativeId, slotId models.ID
+	var creativeID, slotID models.ID
 	var ok bool
-	if creativeId, ok = s.handleCreativeParams(w, r); !ok {
+	if creativeID, ok = s.handleCreativeParams(w, r); !ok {
 		return
 	}
-	if slotId, ok = s.handleSlotParams(w, r); !ok {
+	if slotID, ok = s.handleSlotParams(w, r); !ok {
 		return
 	}
 
 	ctx := r.Context()
-	err := s.creativeApp.RemoveFromSlot(ctx, creativeId, slotId)
+	err := s.creativeApp.RemoveFromSlot(ctx, creativeID, slotID)
 	if err != nil {
 		s.resp.internalServerError(ctx, w, "Unexpected error while removing creative from slot", err)
 		return
@@ -136,19 +134,19 @@ func (s *CreativeService) TrackConversion(w http.ResponseWriter, r *http.Request
 func (s *CreativeService) Next(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	slotId, err := strconv.Atoi(strings.Join(r.URL.Query()["slot_id"], ""))
-	if err != nil || slotId <= 0 {
+	slotID, err := strconv.Atoi(strings.Join(r.URL.Query()["slot_id"], ""))
+	if err != nil || slotID <= 0 {
 		s.resp.badRequest(ctx, w, "slot id isn't specified", err)
 		return
 	}
 
-	segmentId, err := strconv.Atoi(strings.Join(r.URL.Query()["segment_id"], ""))
-	if err != nil || segmentId <= 0 {
+	segmentID, err := strconv.Atoi(strings.Join(r.URL.Query()["segment_id"], ""))
+	if err != nil || segmentID <= 0 {
 		s.resp.badRequest(ctx, w, "segment id isn't specified", err)
 		return
 	}
 
-	creative, err := s.creativeApp.Next(ctx, models.ID(slotId), models.ID(segmentId))
+	creative, err := s.creativeApp.Next(ctx, models.ID(slotID), models.ID(segmentID))
 	if err != nil || creative.ID <= 0 {
 		s.resp.internalServerError(ctx, w, "Unexpected error while getting next creative", err)
 		return

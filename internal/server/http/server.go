@@ -6,15 +6,12 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/pls87/creative-rotation/internal/server/http/handler"
-	"github.com/pls87/creative-rotation/internal/server/http/middleware"
-
 	mux2 "github.com/gorilla/mux"
-
 	"github.com/pls87/creative-rotation/internal/app"
-
 	"github.com/pls87/creative-rotation/internal/config"
 	"github.com/pls87/creative-rotation/internal/logger"
+	"github.com/pls87/creative-rotation/internal/server/http/handler"
+	"github.com/pls87/creative-rotation/internal/server/http/middleware"
 )
 
 type Server struct {

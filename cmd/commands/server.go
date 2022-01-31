@@ -7,9 +7,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/pls87/creative-rotation/internal/server/http"
-
 	"github.com/pls87/creative-rotation/internal/app"
+	"github.com/pls87/creative-rotation/internal/server/http"
 	"github.com/pls87/creative-rotation/internal/storage"
 	"github.com/spf13/cobra"
 )

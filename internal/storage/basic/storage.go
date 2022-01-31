@@ -41,14 +41,14 @@ type CreativeRepository interface {
 	All(ctx context.Context) ([]models.Creative, error)
 	Create(ctx context.Context, c models.Creative) (added models.Creative, err error)
 	Delete(ctx context.Context, id models.ID) error
-	ToSlot(ctx context.Context, creativeId, slotId models.ID) error
-	FromSlot(ctx context.Context, creativeId, slotId models.ID) error
-	InSlot(ctx context.Context, creativeId, slotId models.ID) (bool, error)
+	ToSlot(ctx context.Context, creativeID, slotID models.ID) error
+	FromSlot(ctx context.Context, creativeID, slotID models.ID) error
+	InSlot(ctx context.Context, creativeID, slotID models.ID) (bool, error)
 	TrackImpression(ctx context.Context, impression models.Impression) error
 	TrackConversion(ctx context.Context, conversion models.Conversion) error
 }
 
 type StatsRepository interface {
 	AllStats(ctx context.Context) ([]models.Stats, error)
-	StatsSlotSegment(ctx context.Context, slotId, segmentId models.ID) ([]models.Stats, error)
+	StatsSlotSegment(ctx context.Context, slotID, segmentID models.ID) ([]models.Stats, error)
 }

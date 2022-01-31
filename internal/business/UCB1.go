@@ -7,20 +7,21 @@ import (
 	"github.com/pls87/creative-rotation/internal/storage/models"
 )
 
-func NextCreative(stats []models.Stats) (creativeId models.ID) {
+func NextCreative(stats []models.Stats) (creativeID models.ID) {
 	zeroImp, totalImp := aggregate(stats)
 	if len(zeroImp) > 0 {
-		return zeroImp[rand.Intn(len(zeroImp))].CreativeID
+		return zeroImp[rand.Intn(len(zeroImp))].CreativeID //nolint: gosec
 	}
-	max, cur := math.Inf(-1), 0.0
+	var cur float64
+	max := math.Inf(-1)
 	for _, s := range stats {
 		cur = valueToMaximize(s, totalImp)
 		if cur > max {
 			max = cur
-			creativeId = s.CreativeID
+			creativeID = s.CreativeID
 		}
 	}
-	return creativeId
+	return creativeID
 }
 
 func valueToMaximize(stats models.Stats, totalImp uint64) float64 {

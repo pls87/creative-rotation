@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pls87/creative-rotation/internal/storage/basic"
-
 	"github.com/jmoiron/sqlx"
+	"github.com/pls87/creative-rotation/internal/storage/basic"
 	"github.com/pls87/creative-rotation/internal/storage/models"
 )
 
@@ -28,10 +27,10 @@ func (cr *CreativeRepository) All(ctx context.Context) ([]models.Creative, error
 
 func (cr *CreativeRepository) Create(ctx context.Context, c models.Creative) (added models.Creative, err error) {
 	query := `INSERT INTO "creative" (description) VALUES ($1) RETURNING "ID"`
-	lastInsertId := 0
-	err = cr.db.QueryRowxContext(ctx, query, c.Desc).Scan(&lastInsertId)
+	lastInsertID := 0
+	err = cr.db.QueryRowxContext(ctx, query, c.Desc).Scan(&lastInsertID)
 	if err == nil {
-		c.ID = models.ID(lastInsertId)
+		c.ID = models.ID(lastInsertID)
 	}
 
 	return c, err
@@ -47,37 +46,37 @@ func (cr *CreativeRepository) Delete(ctx context.Context, id models.ID) error {
 	return err
 }
 
-func (cr *CreativeRepository) ToSlot(ctx context.Context, creativeId, slotId models.ID) error {
+func (cr *CreativeRepository) ToSlot(ctx context.Context, creativeID, slotID models.ID) error {
 	query := `INSERT INTO "slot_creative" (creative_id, slot_id) VALUES ($1, $2)`
-	res, err := cr.db.ExecContext(ctx, query, creativeId, slotId)
+	res, err := cr.db.ExecContext(ctx, query, creativeID, slotID)
 	if err != nil {
 		return err
 	}
 	if affected, _ := res.RowsAffected(); affected == 0 {
 		return fmt.Errorf("adding to slot: creative id=%d already in slot_id=%d: %w",
-			creativeId, slotId, basic.ErrCreativeAlreadyInSlot)
+			creativeID, slotID, basic.ErrCreativeAlreadyInSlot)
 	}
 
 	return nil
 }
 
-func (cr *CreativeRepository) FromSlot(ctx context.Context, creativeId, slotId models.ID) error {
+func (cr *CreativeRepository) FromSlot(ctx context.Context, creativeID, slotID models.ID) error {
 	res, err := cr.db.ExecContext(ctx, `DELETE FROM "slot_creative" WHERE creative_id = $1 AND slot_id=$2`,
-		creativeId, slotId)
+		creativeID, slotID)
 	if err != nil {
 		return err
 	}
 	if affected, _ := res.RowsAffected(); affected == 0 {
 		return fmt.Errorf("removing from slot: creative id=%d not in slot_id=%d: %w",
-			creativeId, slotId, basic.ErrCreativeNotInSlot)
+			creativeID, slotID, basic.ErrCreativeNotInSlot)
 	}
 
 	return nil
 }
 
-func (cr *CreativeRepository) InSlot(ctx context.Context, creativeId, slotId models.ID) (bool, error) {
+func (cr *CreativeRepository) InSlot(ctx context.Context, creativeID, slotID models.ID) (bool, error) {
 	rows, err := cr.db.QueryxContext(ctx, `SELECT * FROM "slot_creative" WHERE creative_id = $1 AND slot_id = $2`,
-		creativeId, slotId)
+		creativeID, slotID)
 	if err != nil {
 		return false, err
 	}
