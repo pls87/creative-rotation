@@ -110,7 +110,6 @@ paths:
                 type: array
                 items:
                   $ref: "#/definitions/creative"
-
     post:
       tags:
         - creatives
