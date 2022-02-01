@@ -30,22 +30,20 @@ var updateStatsCmd = &cobra.Command{
 
 		var db *sqlx.DB
 		var err error
-		r := retries
-		for r > 0 {
-			db, err = sqlx.Connect("postgres", cfg.DB.ConnString())
-			if err != nil {
-				logg.Errorf("failed to connect to storage: %s", err)
-				if r == 0 {
-					logg.Errorf("number of retries exceeded. Shutting down: %s", err)
-					os.Exit(1)
-				}
-				logg.Info("retrying...")
-				r--
-				time.Sleep(retryGap)
-			} else {
+		for r := retries; r > 0; r-- {
+			if db, err = sqlx.Connect("postgres", cfg.DB.ConnString()); err != nil {
 				break
 			}
+			logg.Errorf("failed to connect to storage: %s", err)
+			logg.Info("retrying...")
+			time.Sleep(retryGap)
 		}
+
+		if err != nil {
+			logg.Errorf("number of retries exceeded. Shutting down: %s", err)
+			os.Exit(1)
+		}
+
 		logg.Info("connected to storage")
 		defer db.Close()
 

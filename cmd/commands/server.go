@@ -47,21 +47,20 @@ var runServerCmd = &cobra.Command{
 		}()
 
 		logg.Info("connecting to storage...")
-		r := retries
-		for r > 0 {
-			if err := storage.Init(ctx); err != nil {
-				logg.Errorf("failed to connect to storage: %s", err)
-				if r == 0 {
-					logg.Errorf("number of retries exceeded. Shutting down: %s", err)
-					cancel()
-					os.Exit(1)
-				}
-				logg.Error("retrying...")
-				r--
-				time.Sleep(retryGap)
-			} else {
+		var err error
+		for r := retries; r > 0; r-- {
+			if err = storage.Init(ctx); err == nil {
 				break
 			}
+			logg.Errorf("failed to connect to storage: %s", err)
+			logg.Info("retrying...")
+			time.Sleep(retryGap)
+		}
+
+		if err != nil {
+			logg.Errorf("number of retries exceeded. Shutting down: %s", err)
+			cancel()
+			os.Exit(1)
 		}
 
 		logg.Info("app is running...")
