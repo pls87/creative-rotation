@@ -1,0 +1,15 @@
+version: "3"
+
+services:
+  integration-tests:
+    build:
+      dockerfile: ./build/integration/Dockerfile
+      context: ../.
+    depends_on:
+      - api
+    env_file:
+      - test.env
+    networks:
+      main:
+        aliases:
+          - integration_tests

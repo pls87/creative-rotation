@@ -2,10 +2,16 @@ package commands
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/pls87/creative-rotation/internal/config"
 	"github.com/pls87/creative-rotation/internal/logger"
 	"github.com/spf13/cobra"
+)
+
+const (
+	retries  = 5
+	retryGap = 2 * time.Second
 )
 
 var (

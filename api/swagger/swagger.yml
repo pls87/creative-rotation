@@ -201,7 +201,7 @@ paths:
                   $ref: "#/definitions/segment"
     post:
       tags:
-        - slots
+        - segments
       parameters:
         - in: body
           name: slot

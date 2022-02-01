@@ -16,5 +16,22 @@ lint: lint-deps
 test:
 	go test -race ./internal/...
 
+build-img-migrations:
+	docker build migrations/.
+
+build-img-api:
+	docker build -f build/api/Dockerfile .
+
+build-img-stats:
+	docker build -f build/stats/Dockerfile .
+
+build-img-integration:
+	docker build -f build/integration/Dockerfile .
+
+run-docker-api-with-tool: build-img-api build-img-stats build-img-migrations
+	./scripts/run-api-with-tool.sh
+
+run-docker-integration-test: build-img-api build-img-stats build-img-migrations build-img-integration
+	./scripts/run-integration-test.sh
 
 .PHONY: build run version test lint

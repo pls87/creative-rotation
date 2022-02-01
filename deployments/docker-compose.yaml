@@ -40,8 +40,6 @@ services:
     build:
       dockerfile: ./build/api/Dockerfile
       context: ../
-    ports:
-      - "8081:8080"
     depends_on:
       - db
       - migrations
@@ -55,42 +53,7 @@ services:
       main:
         aliases:
           - api
-  adminer:
-    image: adminer:latest
-    ports:
-      - "8083:8080"
-    depends_on:
-      - db
-    networks:
-      main:
-        aliases:
-          - adminer
-  swagger:
-    build: ../api/swagger/.
-    ports:
-      - "8082:8080"
-    depends_on:
-      - api
-    environment:
-      SWAGGER_JSON: /swagger.yml
-    networks:
-      main:
-        aliases:
-          - swagger
-  proxy:
-    image: nginx:mainline-alpine
-    depends_on:
-      - api
-      - swagger
-      - adminer
-    ports:
-      - "8080:8080"
-    volumes:
-      - ./proxy.conf:/etc/nginx/conf.d/default.conf
-    networks:
-      main:
-        aliases:
-          - proxy
+
 networks:
   main:
     driver: bridge
