@@ -32,13 +32,13 @@ func (s *SlotService) New(w http.ResponseWriter, r *http.Request) {
 	var toCreate models.Slot
 	err := json.NewDecoder(r.Body).Decode(&toCreate)
 	if err != nil {
-		s.resp.badRequest(ctx, w, "failed to parse creative body", err)
+		s.resp.badRequest(ctx, w, "failed to parse segment body", err)
 		return
 	}
 
 	created, err := s.slotApp.New(ctx, toCreate)
 	if err != nil {
-		s.resp.internalServerError(ctx, w, "Unexpected error while saving creative to storage", err)
+		s.resp.internalServerError(ctx, w, "Unexpected error while saving slot to storage", err)
 		return
 	}
 

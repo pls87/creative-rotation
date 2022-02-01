@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -48,19 +49,20 @@ func (s *CreativeService) New(w http.ResponseWriter, r *http.Request) {
 	s.resp.json(ctx, w, map[string]models.Creative{"creative": created})
 }
 
-func (s *CreativeService) handleCreativeParams(w http.ResponseWriter, r *http.Request) (id models.ID, ok bool) {
+func (s *CreativeService) handleURLParamID(w http.ResponseWriter,
+	r *http.Request, name string) (id models.ID, ok bool) {
 	vars := mux.Vars(r)
 
-	creativeID, e := strconv.Atoi(vars["id"])
-	if e != nil || creativeID <= 0 {
-		s.resp.badRequest(r.Context(), w, "malformed creative id", e)
+	tempID, e := strconv.Atoi(vars[name])
+	if e != nil || tempID <= 0 {
+		s.resp.badRequest(r.Context(), w, fmt.Sprintf("malformed %s", name), e)
 		return 0, false
 	}
 
-	return models.ID(creativeID), true
+	return models.ID(tempID), true
 }
 
-func (s *CreativeService) handleSlotParams(w http.ResponseWriter, r *http.Request) (slotID models.ID, ok bool) {
+func (s *CreativeService) handleSlotBody(w http.ResponseWriter, r *http.Request) (slotID models.ID, ok bool) {
 	var slot models.Slot
 	err := json.NewDecoder(r.Body).Decode(&slot)
 	if err != nil || slot.ID <= 0 {
@@ -74,10 +76,10 @@ func (s *CreativeService) handleSlotParams(w http.ResponseWriter, r *http.Reques
 func (s *CreativeService) AddToSlot(w http.ResponseWriter, r *http.Request) {
 	var creativeID, slotID models.ID
 	var ok bool
-	if creativeID, ok = s.handleCreativeParams(w, r); !ok {
+	if creativeID, ok = s.handleURLParamID(w, r, "creative_id"); !ok {
 		return
 	}
-	if slotID, ok = s.handleSlotParams(w, r); !ok {
+	if slotID, ok = s.handleSlotBody(w, r); !ok {
 		return
 	}
 
@@ -95,10 +97,10 @@ func (s *CreativeService) AddToSlot(w http.ResponseWriter, r *http.Request) {
 func (s *CreativeService) RemoveFromSlot(w http.ResponseWriter, r *http.Request) {
 	var creativeID, slotID models.ID
 	var ok bool
-	if creativeID, ok = s.handleCreativeParams(w, r); !ok {
+	if creativeID, ok = s.handleURLParamID(w, r, "creative_id"); !ok {
 		return
 	}
-	if slotID, ok = s.handleSlotParams(w, r); !ok {
+	if slotID, ok = s.handleURLParamID(w, r, "slot_id"); !ok {
 		return
 	}
 
@@ -129,6 +131,25 @@ func (s *CreativeService) TrackConversion(w http.ResponseWriter, r *http.Request
 	}
 
 	s.resp.json(ctx, w, map[string]models.Conversion{"conversion": toCreate})
+}
+
+func (s *CreativeService) TrackImpression(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var toCreate models.Impression
+	err := json.NewDecoder(r.Body).Decode(&toCreate)
+	if err != nil {
+		s.resp.badRequest(ctx, w, "failed to parse impression body", err)
+		return
+	}
+
+	err = s.creativeApp.TrackImpression(ctx, toCreate)
+	if err != nil {
+		s.resp.internalServerError(ctx, w, "Unexpected error while saving impression to storage", err)
+		return
+	}
+
+	s.resp.json(ctx, w, map[string]models.Impression{"impression": toCreate})
 }
 
 func (s *CreativeService) Next(w http.ResponseWriter, r *http.Request) {

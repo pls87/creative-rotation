@@ -15,6 +15,7 @@ type CreativeApplication interface {
 	AddToSlot(ctx context.Context, creativeID, slotID models.ID) error
 	RemoveFromSlot(ctx context.Context, creativeID, slotID models.ID) error
 	TrackConversion(ctx context.Context, conversion models.Conversion) error
+	TrackImpression(ctx context.Context, conversion models.Impression) error
 	Next(ctx context.Context, slotID, segmentID models.ID) (models.Creative, error)
 }
 
@@ -41,6 +42,10 @@ func (a *CreativeApp) RemoveFromSlot(ctx context.Context, creativeID, slotID mod
 
 func (a *CreativeApp) TrackConversion(ctx context.Context, conversion models.Conversion) error {
 	return a.storage.Creatives().TrackConversion(ctx, conversion)
+}
+
+func (a *CreativeApp) TrackImpression(ctx context.Context, impression models.Impression) error {
+	return a.storage.Creatives().TrackImpression(ctx, impression)
 }
 
 func (a *CreativeApp) Next(ctx context.Context, slotID, segmentID models.ID) (models.Creative, error) {
