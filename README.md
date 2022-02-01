@@ -19,6 +19,7 @@ POST    "/creative" - create new creative
 POST    "/creative/{creative_id:[0-9]+}/slot" - attach creative to slot
 DELETE  "/creative/{creative_id:[0-9]+}/slot/{slot_id:[0-9]+}" - detach creative out of slot
 POST    "/conversion" - track click on creative
+POST    "/impression" - track impression for creative
 GET     "/creative/next" - get next creative to show
 GET     "/slot" - get list of all slots
 POST    "/slot" - create new slot
