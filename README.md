@@ -27,7 +27,7 @@ GET     "/segment" - get list of all segments
 POST    "/segment" - create new segment
 ```
 ### Swagger UI
-Providing simple UI for API access. Available here: http://127.0.0.1:8080/swaggerui
+Provides simple UI for API access. Available here: http://127.0.0.1:8080/swaggerui
 ### Stats Updater
 Background job to update impression/conversion aggregated statistics
 ### Adminer
