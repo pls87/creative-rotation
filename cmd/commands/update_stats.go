@@ -21,7 +21,6 @@ func init() {
 var updateStatsCmd = &cobra.Command{
 	Use:   "update_stats",
 	Short: "Updates impressions/conversions statistics",
-	Long:  `<Long version desc>`,
 	Run: func(cmd *cobra.Command, args []string) {
 		logg.Info("stats updater process starting...")
 		defer func() {

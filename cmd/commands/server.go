@@ -19,8 +19,7 @@ func init() {
 
 var runServerCmd = &cobra.Command{
 	Use:   "server",
-	Short: "Runs API for creative rotation app",
-	Long:  `<Long version desc>`,
+	Short: "Runs REST API for creative rotation app",
 	Run: func(cmd *cobra.Command, args []string) {
 		storage := storage.New(cfg.DB)
 		cr := app.New(logg, storage)
