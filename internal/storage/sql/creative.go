@@ -22,7 +22,7 @@ func (cr *CreativeRepository) All(ctx context.Context) ([]models.Creative, error
 	var creatives []models.Creative
 	err := cr.db.SelectContext(ctx, &creatives, `SELECT * FROM "creative"`)
 
-	return creatives, err
+	return creatives, fmt.Errorf("couldn't get creatives from database: %w", err)
 }
 
 func (cr *CreativeRepository) Create(ctx context.Context, c models.Creative) (added models.Creative, err error) {
@@ -33,17 +33,17 @@ func (cr *CreativeRepository) Create(ctx context.Context, c models.Creative) (ad
 		c.ID = models.ID(lastInsertID)
 	}
 
-	return c, err
+	return c, fmt.Errorf("couldn't create creative in database: %w", err)
 }
 
 func (cr *CreativeRepository) Delete(ctx context.Context, id models.ID) error {
 	res, err := cr.db.ExecContext(ctx, `DELETE FROM "creative" WHERE "ID"=$1`, id)
 	if err == nil {
 		if affected, _ := res.RowsAffected(); affected == 0 {
-			return fmt.Errorf("DELETE: creative id=%d: %w", id, basic.ErrDoesNotExist)
+			return fmt.Errorf("couldn't delete creative id=%d: %w", id, basic.ErrDoesNotExist)
 		}
 	}
-	return err
+	return fmt.Errorf("couldn't delete creative id=%d: %w", id, err)
 }
 
 func (cr *CreativeRepository) ToSlot(ctx context.Context, creativeID, slotID models.ID) error {
@@ -53,7 +53,7 @@ func (cr *CreativeRepository) ToSlot(ctx context.Context, creativeID, slotID mod
 		return err
 	}
 	if affected, _ := res.RowsAffected(); affected == 0 {
-		return fmt.Errorf("adding to slot: creative id=%d already in slot_id=%d: %w",
+		return fmt.Errorf("couldn't add creative id=%d to slot_id=%d: %w",
 			creativeID, slotID, basic.ErrCreativeAlreadyInSlot)
 	}
 
@@ -67,7 +67,7 @@ func (cr *CreativeRepository) FromSlot(ctx context.Context, creativeID, slotID m
 		return err
 	}
 	if affected, _ := res.RowsAffected(); affected == 0 {
-		return fmt.Errorf("removing from slot: creative id=%d not in slot_id=%d: %w",
+		return fmt.Errorf("couldn't delete creative id=%d from slot_id=%d: %w",
 			creativeID, slotID, basic.ErrCreativeNotInSlot)
 	}
 
@@ -78,11 +78,11 @@ func (cr *CreativeRepository) InSlot(ctx context.Context, creativeID, slotID mod
 	rows, err := cr.db.QueryxContext(ctx, `SELECT * FROM "slot_creative" WHERE creative_id = $1 AND slot_id = $2`,
 		creativeID, slotID)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("couldn't get info about slot/creative: %w", err)
 	}
 	defer rows.Close()
 
-	return rows.Next(), err
+	return rows.Next(), fmt.Errorf("couldn't get info about slot/creative: %w", err)
 }
 
 func (cr *CreativeRepository) TrackImpression(ctx context.Context, imp models.Impression) error {

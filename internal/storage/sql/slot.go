@@ -22,7 +22,7 @@ func (sr *SlotRepository) All(ctx context.Context) ([]models.Slot, error) {
 	var slots []models.Slot
 	err := sr.db.SelectContext(ctx, &slots, `SELECT * FROM "slot"`)
 
-	return slots, err
+	return slots, fmt.Errorf("couldn't get slots from database: %w", err)
 }
 
 func (sr *SlotRepository) Create(ctx context.Context, s models.Slot) (added models.Slot, err error) {
@@ -32,15 +32,15 @@ func (sr *SlotRepository) Create(ctx context.Context, s models.Slot) (added mode
 	if err == nil {
 		s.ID = models.ID(lastInsertID)
 	}
-	return s, err
+	return s, fmt.Errorf("couldn't create slot in database: %w", err)
 }
 
 func (sr *SlotRepository) Delete(ctx context.Context, id models.ID) error {
 	res, err := sr.db.ExecContext(ctx, `DELETE FROM "slot" WHERE "ID"=$1`, id)
 	if err == nil {
 		if affected, _ := res.RowsAffected(); affected == 0 {
-			return fmt.Errorf("DELETE: slot id=%d: %w", id, basic.ErrDoesNotExist)
+			return fmt.Errorf("couldn't delete slot id=%d: %w", id, basic.ErrDoesNotExist)
 		}
 	}
-	return err
+	return fmt.Errorf("couldn't delete slot id=%d: %w", id, err)
 }
