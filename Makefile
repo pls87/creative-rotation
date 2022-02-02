@@ -20,13 +20,13 @@ build-img-migrations:
 	docker build migrations/.
 
 build-img-api:
-	docker build -f build/api/Dockerfile .
+	docker build -t cr:api -f build/api/Dockerfile .
 
 build-img-stats:
-	docker build -f build/stats/Dockerfile .
+	docker build -t cr:stats -f build/stats/Dockerfile .
 
 build-img-integration:
-	docker build -f build/integration/Dockerfile .
+	docker build -t cr:intergration -f build/integration/Dockerfile .
 
 run-docker-api-with-tool: build-img-api build-img-stats build-img-migrations
 	./scripts/run-api-with-tool.sh

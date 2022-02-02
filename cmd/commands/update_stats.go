@@ -31,7 +31,7 @@ var updateStatsCmd = &cobra.Command{
 		var db *sqlx.DB
 		var err error
 		for r := retries; r > 0; r-- {
-			if db, err = sqlx.Connect("postgres", cfg.DB.ConnString()); err != nil {
+			if db, err = sqlx.Connect("postgres", cfg.DB.ConnString()); err == nil {
 				break
 			}
 			logg.Errorf("failed to connect to storage: %s", err)

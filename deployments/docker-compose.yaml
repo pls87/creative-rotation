@@ -22,9 +22,7 @@ services:
         aliases:
           - migrations
   stats_updater:
-    build:
-      dockerfile: ./build/stats/Dockerfile
-      context: ../.
+    image: cr:stats
     depends_on:
       - db
     env_file:
@@ -37,9 +35,7 @@ services:
         aliases:
           - stats_updater
   api:
-    build:
-      dockerfile: ./build/api/Dockerfile
-      context: ../
+    image: cr:api
     depends_on:
       - db
       - migrations

@@ -2,9 +2,7 @@ version: "3"
 
 services:
   integration-tests:
-    build:
-      dockerfile: ./build/integration/Dockerfile
-      context: ../.
+    image: cr:integration
     depends_on:
       - api
     env_file:
