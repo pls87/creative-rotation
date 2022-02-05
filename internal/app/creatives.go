@@ -5,6 +5,7 @@ import (
 
 	"github.com/pls87/creative-rotation/internal/business"
 	"github.com/pls87/creative-rotation/internal/logger"
+	"github.com/pls87/creative-rotation/internal/stats"
 	"github.com/pls87/creative-rotation/internal/storage/basic"
 	"github.com/pls87/creative-rotation/internal/storage/models"
 )
@@ -22,6 +23,7 @@ type CreativeApplication interface {
 type CreativeApp struct {
 	logger  *logger.Logger
 	storage basic.Storage
+	stats   stats.Producer
 }
 
 func (a *CreativeApp) All(ctx context.Context) (collection []models.Creative, err error) {
@@ -41,20 +43,30 @@ func (a *CreativeApp) RemoveFromSlot(ctx context.Context, creativeID, slotID mod
 }
 
 func (a *CreativeApp) TrackConversion(ctx context.Context, conversion models.Conversion) error {
-	return a.storage.Creatives().TrackConversion(ctx, conversion)
+	return a.stats.Produce("conversion", stats.Event{
+		CreativeID: conversion.CreativeID,
+		SegmentID:  conversion.SegmentID,
+		SlotID:     conversion.SlotID,
+		Time:       conversion.Time,
+	})
 }
 
 func (a *CreativeApp) TrackImpression(ctx context.Context, impression models.Impression) error {
-	return a.storage.Creatives().TrackImpression(ctx, impression)
+	return a.stats.Produce("conversion", stats.Event{
+		CreativeID: impression.CreativeID,
+		SegmentID:  impression.SegmentID,
+		SlotID:     impression.SlotID,
+		Time:       impression.Time,
+	})
 }
 
 func (a *CreativeApp) Next(ctx context.Context, slotID, segmentID models.ID) (models.Creative, error) {
 	next := models.Creative{}
-	stats, err := a.storage.Stats().StatsSlotSegment(ctx, slotID, segmentID)
+	stat, err := a.storage.Stats().StatsSlotSegment(ctx, slotID, segmentID)
 	if err != nil {
-		a.logger.WithContext(ctx).Errorf("Next creative: %s", err)
+		a.logger.WithContext(ctx).Errorf("couldn't get stats to calculate next creative: %s", err)
 	} else {
-		next.ID = business.NextCreative(stats)
+		next.ID = business.NextCreative(stat)
 	}
 
 	return next, err

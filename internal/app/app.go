@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/pls87/creative-rotation/internal/logger"
+	"github.com/pls87/creative-rotation/internal/stats"
 	"github.com/pls87/creative-rotation/internal/storage/basic"
 )
 
@@ -29,11 +30,12 @@ func (a *App) Segments() SegmentApplication {
 	return &a.segments
 }
 
-func New(logger *logger.Logger, storage basic.Storage) Application {
+func New(logger *logger.Logger, storage basic.Storage, stats stats.Producer) Application {
 	return &App{
 		creatives: CreativeApp{
 			logger:  logger,
 			storage: storage,
+			stats:   stats,
 		},
 		slots: SlotApp{
 			logger:  logger,

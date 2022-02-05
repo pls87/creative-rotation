@@ -11,6 +11,7 @@ type Config struct {
 	DB    DBConf     `mapstructure:"DB"`
 	API   APIConf    `mapstructure:"API"`
 	Stats StatsConf  `mapstructure:"STATS"`
+	Queue QueueConf  `mapstructure:"QUEUE"`
 }
 
 type LoggerConf struct {
@@ -27,6 +28,11 @@ type DBConf struct {
 
 type StatsConf struct {
 	Interval int `mapstructure:"STATS_INTERVAL"` // in seconds
+}
+
+type QueueConf struct {
+	Host string `mapstructure:"KAFKA_HOST"`
+	Port int    `mapstructure:"KAFKA_PORT"`
 }
 
 func (db *DBConf) ConnString() string {
@@ -49,10 +55,13 @@ func (cfg *Config) bindEnv() {
 	_ = viper.BindEnv("STATS_INTERVAL")
 	_ = viper.BindEnv("API_HOST")
 	_ = viper.BindEnv("API_PORT")
+	_ = viper.BindEnv("KAFKA_HOST")
+	_ = viper.BindEnv("KAFKA_PORT")
 	_ = viper.Unmarshal(&cfg.Log)
 	_ = viper.Unmarshal(&cfg.DB)
 	_ = viper.Unmarshal(&cfg.API)
 	_ = viper.Unmarshal(&cfg.Stats)
+	_ = viper.Unmarshal(&cfg.Queue)
 }
 
 func (cfg *Config) bindFile(cfgFile string) {

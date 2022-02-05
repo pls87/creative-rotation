@@ -9,6 +9,7 @@ import (
 
 	"github.com/pls87/creative-rotation/internal/app"
 	"github.com/pls87/creative-rotation/internal/server/http"
+	"github.com/pls87/creative-rotation/internal/stats"
 	"github.com/pls87/creative-rotation/internal/storage"
 	"github.com/spf13/cobra"
 )
@@ -23,7 +24,8 @@ var runServerCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		logg.Info(cfg)
 		storage := storage.New(cfg.DB)
-		cr := app.New(logg, storage)
+		stats := stats.NewProducer(logg, cfg.Queue)
+		cr := app.New(logg, storage, stats)
 
 		server := http.NewServer(logg, cr, cfg.API)
 
@@ -41,27 +43,40 @@ var runServerCmd = &cobra.Command{
 				logg.Error("failed to close storage connection: " + err.Error())
 			}
 
+			stats.Dispose()
+
 			if err := server.Stop(ctx); err != nil {
 				logg.Error("failed to stop http internal: " + err.Error())
 			}
 		}
 
-		logg.Info("connecting to storage...")
-		var err error
-		for r := retries; r > 0; r-- {
-			if err = storage.Init(ctx); err == nil {
-				break
+		retry := func(toRetry func() error) {
+			var err error
+			for r := retries; r > 0; r-- {
+				if err = toRetry(); err == nil {
+					break
+				}
+				logg.Errorf("failed to connect: %s", err)
+				logg.Info("retrying...")
+				time.Sleep(retryGap)
 			}
-			logg.Errorf("failed to connect to storage: %s", err)
-			logg.Info("retrying...")
-			time.Sleep(retryGap)
+
+			if err != nil {
+				logg.Errorf("number of retries exceeded. Shutting down: %s", err)
+				cancel()
+				os.Exit(1)
+			}
 		}
 
-		if err != nil {
-			logg.Errorf("number of retries exceeded. Shutting down: %s", err)
-			cancel()
-			os.Exit(1)
-		}
+		logg.Info("connecting to storage...")
+		retry(func() error {
+			return storage.Init(ctx)
+		})
+
+		logg.Info("connecting to broker...")
+		retry(func() error {
+			return stats.Init()
+		})
 
 		logg.Info("app is running...")
 
