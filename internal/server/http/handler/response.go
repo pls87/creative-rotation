@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/pls87/creative-rotation/internal/logger"
@@ -13,7 +14,7 @@ type response struct {
 }
 
 func (eh *response) httpError(ctx context.Context, w http.ResponseWriter, status int, msg string, err error) {
-	eh.logger.WithContext(ctx).Error(msg, err)
+	eh.logger.WithContext(ctx).Error(fmt.Errorf("%s: %w", msg, err))
 	http.Error(w, msg, status)
 }
 

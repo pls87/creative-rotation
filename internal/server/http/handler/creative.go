@@ -1,11 +1,11 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/pls87/creative-rotation/internal/app"
@@ -154,24 +154,41 @@ func (s *CreativeService) TrackImpression(w http.ResponseWriter, r *http.Request
 
 func (s *CreativeService) Next(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-
-	slotID, err := strconv.Atoi(strings.Join(r.URL.Query()["slot_id"], ""))
-	if err != nil || slotID <= 0 {
-		s.resp.badRequest(ctx, w, "slot id isn't specified", err)
+	slotID, ok := s.handleIDQuery("slot_id", ctx, w, r)
+	if !ok {
+		return
+	}
+	segmentID, ok := s.handleIDQuery("segment_id", ctx, w, r)
+	if !ok {
 		return
 	}
 
-	segmentID, err := strconv.Atoi(strings.Join(r.URL.Query()["segment_id"], ""))
-	if err != nil || segmentID <= 0 {
-		s.resp.badRequest(ctx, w, "segment id isn't specified", err)
-		return
-	}
-
-	creative, err := s.creativeApp.Next(ctx, models.ID(slotID), models.ID(segmentID))
+	creative, err := s.creativeApp.Next(ctx, slotID, segmentID)
 	if err != nil || creative.ID <= 0 {
 		s.resp.internalServerError(ctx, w, "Unexpected error while getting next creative", err)
 		return
 	}
 
 	s.resp.json(ctx, w, map[string]models.Creative{"creative": creative})
+}
+
+func (s *CreativeService) handleIDQuery(param string, ctx context.Context, w http.ResponseWriter,
+	r *http.Request) (models.ID, bool) {
+	IDs := r.URL.Query()[param]
+	if len(IDs) == 0 {
+		s.resp.badRequest(ctx, w, fmt.Sprintf("%s isn't specified", param), nil)
+		return 0, false
+	}
+	if len(IDs) != 1 {
+		s.resp.badRequest(ctx, w, fmt.Sprintf("more than one %s were passed", param), nil)
+		return 0, false
+	}
+
+	ID, err := strconv.Atoi(IDs[0])
+	if err != nil || ID <= 0 {
+		s.resp.badRequest(ctx, w, fmt.Sprintf("malformed %s", param), err)
+		return 0, false
+	}
+
+	return models.ID(ID), true
 }
