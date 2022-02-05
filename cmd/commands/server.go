@@ -21,6 +21,7 @@ var runServerCmd = &cobra.Command{
 	Use:   "server",
 	Short: "Runs REST API for creative rotation app",
 	Run: func(cmd *cobra.Command, args []string) {
+		logg.Info(cfg)
 		storage := storage.New(cfg.DB)
 		cr := app.New(logg, storage)
 
@@ -31,6 +32,8 @@ var runServerCmd = &cobra.Command{
 		defer cancel()
 
 		shutDown := func() {
+			<-ctx.Done()
+
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 			defer cancel()
 
@@ -62,14 +65,12 @@ var runServerCmd = &cobra.Command{
 
 		logg.Info("app is running...")
 
+		go shutDown()
+
 		if err := server.Start(ctx); err != nil {
 			logg.Error("failed to start http server: " + err.Error())
 			cancel()
 			os.Exit(1)
 		}
-
-		<-ctx.Done()
-
-		shutDown()
 	},
 }

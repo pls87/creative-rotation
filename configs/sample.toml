@@ -1,15 +1,16 @@
-[logger]
-level = "debug"
+[LOGGER]
+LOG_LEVEL = "debug"
 
-[db]
-host = "127.0.0.1"
-name = "creatives"
-user = "cr_user"
-password = "password"
+[DB]
+POSTGRES_HOST = "127.0.0.1"
+POSTGRES_PORT = 8086
+POSTGRES_DB = "creatives"
+POSTGRES_USER = "cr_user"
+POSTGRES_PASSWORD = "password"
 
-[stats]
-interval = 1 #seconds
+[STATS]
+INTERVAL = 1 #seconds
 
-[api]
-host = "127.0.0.1"
-port = 8080
+[API]
+API_HOST = "127.0.0.1"
+API_PORT = 8081

@@ -5,6 +5,8 @@ services:
     image: postgres:latest
     env_file:
       - db.env
+    ports:
+      - "${DB_PORT}:5432"
     networks:
       main:
         aliases:

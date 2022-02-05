@@ -7,30 +7,31 @@ import (
 )
 
 type Config struct {
-	Log   LoggerConf `toml:"logger"`
-	DB    DBConf     `toml:"db"`
-	API   APIConf    `toml:"api"`
-	Stats StatsConf  `toml:"stats"`
+	Log   LoggerConf `mapstructure:"LOGGER"`
+	DB    DBConf     `mapstructure:"DB"`
+	API   APIConf    `mapstructure:"API"`
+	Stats StatsConf  `mapstructure:"STATS"`
 }
 
 type LoggerConf struct {
-	Level string `mapstructure:"LOG_LEVEL" toml:"level"`
+	Level string `mapstructure:"LOG_LEVEL"`
 }
 
 type DBConf struct {
-	Host     string `mapstructure:"POSTGRES_HOST" toml:"host"`
-	Name     string `mapstructure:"POSTGRES_DB" toml:"name"`
-	User     string `mapstructure:"POSTGRES_USER" toml:"user"`
-	Password string `mapstructure:"POSTGRES_PASSWORD" toml:"password"`
+	Host     string `mapstructure:"POSTGRES_HOST"`
+	Port     string `mapstructure:"POSTGRES_PORT"`
+	Name     string `mapstructure:"POSTGRES_DB"`
+	User     string `mapstructure:"POSTGRES_USER"`
+	Password string `mapstructure:"POSTGRES_PASSWORD"`
 }
 
 type StatsConf struct {
-	Interval int `mapstructure:"STATS_INTERVAL" toml:"interval"` // in seconds
+	Interval int `mapstructure:"STATS_INTERVAL"` // in seconds
 }
 
 func (db *DBConf) ConnString() string {
-	return fmt.Sprintf(`host=%s user=%s password=%s dbname=%s sslmode=disable`,
-		db.Host, db.User, db.Password, db.Name)
+	return fmt.Sprintf(`host=%s port=%s user=%s password=%s dbname=%s sslmode=disable`,
+		db.Host, db.Port, db.User, db.Password, db.Name)
 }
 
 type APIConf struct {

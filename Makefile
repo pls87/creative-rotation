@@ -7,8 +7,11 @@ LDFLAGS := -X '${REPO}/cmd/commands.Release=develop' -X '${REPO}/cmd/commands.Bu
 build:
 	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd
 
-run: build
-	$(BIN) --config ./configs/sample.toml
+run-api: build
+	$(BIN) server --config ./configs/sample.toml
+
+run-stats-updater: build
+	$(BIN) update_stats --config ./configs/sample.toml
 
 lint-deps:
 	(which golangci-lint > /dev/null) || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.41.1
@@ -30,6 +33,9 @@ build-img-stats:
 
 build-img-integration:
 	docker build -t cr:intergration -f build/integration/Dockerfile .
+
+run-database:
+	./scripts/run-database.sh
 
 run-docker-api-with-tool: build-img-api build-img-stats build-img-migrations
 	./scripts/run-api-with-tool.sh
