@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	mux2 "github.com/gorilla/mux"
+	"github.com/gorilla/mux"
 	"github.com/pls87/creative-rotation/internal/app"
 	"github.com/pls87/creative-rotation/internal/config"
 	"github.com/pls87/creative-rotation/internal/logger"
@@ -30,7 +30,7 @@ func NewServer(logger *logger.Logger, app app.Application, cfg config.APIConf) *
 }
 
 func (s *Server) Start(ctx context.Context) error {
-	mux := mux2.NewRouter()
+	mux := mux.NewRouter()
 
 	mux.HandleFunc("/noop", s.service.Noop).Methods("GET")
 	mux.HandleFunc("/creative", s.service.Creatives().All).Methods("GET")
