@@ -16,19 +16,23 @@ type SlotRepository struct {
 
 func (sr *SlotRepository) All(ctx context.Context) ([]models.Slot, error) {
 	var slots []models.Slot
-	err := sr.db.SelectContext(ctx, &slots, `SELECT * FROM "slot"`)
+	if err := sr.db.SelectContext(ctx, &slots, `SELECT * FROM "slot"`); err != nil {
+		return nil, fmt.Errorf("couldn't get slots from database: %w", err)
+	}
 
-	return slots, fmt.Errorf("couldn't get slots from database: %w", err)
+	return slots, nil
 }
 
 func (sr *SlotRepository) Create(ctx context.Context, s models.Slot) (added models.Slot, err error) {
 	query := `INSERT INTO "slot" (description) VALUES ($1) RETURNING "ID"`
 	lastInsertID := 0
-	err = sr.db.QueryRowxContext(ctx, query, s.Desc).Scan(&lastInsertID)
-	if err == nil {
+	if err = sr.db.QueryRowxContext(ctx, query, s.Desc).Scan(&lastInsertID); err != nil {
+		return s, fmt.Errorf("couldn't create slot in database: %w", err)
+	} else {
 		s.ID = models.ID(lastInsertID)
 	}
-	return s, fmt.Errorf("couldn't create slot in database: %w", err)
+
+	return s, nil
 }
 
 func (sr *SlotRepository) Delete(ctx context.Context, id models.ID) error {
@@ -37,6 +41,7 @@ func (sr *SlotRepository) Delete(ctx context.Context, id models.ID) error {
 		if affected, _ := res.RowsAffected(); affected == 0 {
 			return fmt.Errorf("couldn't delete slot id=%d: %w", id, basic.ErrDoesNotExist)
 		}
+		return nil
 	}
 	return fmt.Errorf("couldn't delete slot id=%d: %w", id, err)
 }

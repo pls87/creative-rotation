@@ -7,6 +7,9 @@ LDFLAGS := -X '${REPO}/cmd/commands.Release=develop' -X '${REPO}/cmd/commands.Bu
 build:
 	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd
 
+run: build
+	$(BIN) --config ./configs/sample.toml
+
 lint-deps:
 	(which golangci-lint > /dev/null) || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.41.1
 

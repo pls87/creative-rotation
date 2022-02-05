@@ -27,8 +27,11 @@ func (sr *StatsRepository) StatsSlotSegment(ctx context.Context, slotID, segment
 	var stats []models.Stats
 	err := sr.db.SelectContext(ctx, &stats,
 		`SELECT * FROM "stats" WHERE slot_id=$1 AND segment_id=$2`, slotID, segmentID)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't get stats for slot_id=%d/segment_id=%d: %w", slotID, segmentID, err)
+	}
 
-	return stats, fmt.Errorf("couldn't get stats for slot_id=%d/segment_id=%d: %w", slotID, segmentID, err)
+	return stats, nil
 }
 
 func (sr *StatsRepository) UpdateStatsImpression(ctx context.Context, impression models.Impression) error {

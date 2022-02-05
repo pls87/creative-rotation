@@ -16,20 +16,23 @@ type CreativeRepository struct {
 
 func (cr *CreativeRepository) All(ctx context.Context) ([]models.Creative, error) {
 	var creatives []models.Creative
-	err := cr.db.SelectContext(ctx, &creatives, `SELECT * FROM "creative"`)
+	if err := cr.db.SelectContext(ctx, &creatives, `SELECT * FROM "creative"`); err != nil {
+		return nil, fmt.Errorf("couldn't get creatives from database: %w", err)
+	}
 
-	return creatives, fmt.Errorf("couldn't get creatives from database: %w", err)
+	return creatives, nil
 }
 
 func (cr *CreativeRepository) Create(ctx context.Context, c models.Creative) (added models.Creative, err error) {
 	query := `INSERT INTO "creative" (description) VALUES ($1) RETURNING "ID"`
 	lastInsertID := 0
-	err = cr.db.QueryRowxContext(ctx, query, c.Desc).Scan(&lastInsertID)
-	if err == nil {
+	if err = cr.db.QueryRowxContext(ctx, query, c.Desc).Scan(&lastInsertID); err != nil {
+		return c, fmt.Errorf("couldn't create creative in database: %w", err)
+	} else {
 		c.ID = models.ID(lastInsertID)
 	}
 
-	return c, fmt.Errorf("couldn't create creative in database: %w", err)
+	return c, nil
 }
 
 func (cr *CreativeRepository) Delete(ctx context.Context, id models.ID) error {
@@ -38,6 +41,7 @@ func (cr *CreativeRepository) Delete(ctx context.Context, id models.ID) error {
 		if affected, _ := res.RowsAffected(); affected == 0 {
 			return fmt.Errorf("couldn't delete creative id=%d: %w", id, basic.ErrDoesNotExist)
 		}
+		return nil
 	}
 	return fmt.Errorf("couldn't delete creative id=%d: %w", id, err)
 }
@@ -78,19 +82,25 @@ func (cr *CreativeRepository) InSlot(ctx context.Context, creativeID, slotID mod
 	}
 	defer rows.Close()
 
-	return rows.Next(), fmt.Errorf("couldn't get info about slot/creative: %w", err)
+	return rows.Next(), nil
 }
 
 func (cr *CreativeRepository) TrackImpression(ctx context.Context, imp models.Impression) error {
 	query := `INSERT INTO "impression" (creative_id, slot_id, segment_id, time) VALUES ($1, $2, $3, $4)`
 	_, err := cr.db.ExecContext(ctx, query, imp.CreativeID, imp.SlotID, imp.SegmentID, time.Now())
+	if err != nil {
+		return fmt.Errorf("couldn't track impression: %w", err)
+	}
 
-	return err
+	return nil
 }
 
 func (cr *CreativeRepository) TrackConversion(ctx context.Context, conversion models.Conversion) error {
 	query := `INSERT INTO "conversion" (creative_id, slot_id, segment_id, time) VALUES ($1, $2, $3, $4)`
 	_, err := cr.db.ExecContext(ctx, query, conversion.CreativeID, conversion.SlotID, conversion.SegmentID, time.Now())
+	if err != nil {
+		return fmt.Errorf("couldn't track conversion: %w", err)
+	}
 
-	return err
+	return nil
 }

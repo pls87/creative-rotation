@@ -16,19 +16,23 @@ type SegmentRepository struct {
 
 func (sr *SegmentRepository) All(ctx context.Context) ([]models.Segment, error) {
 	var segments []models.Segment
-	err := sr.db.SelectContext(ctx, &segments, `SELECT * FROM "segment"`)
+	if err := sr.db.SelectContext(ctx, &segments, `SELECT * FROM "segment"`); err != nil {
+		return nil, fmt.Errorf("couldn't get segments from database: %w", err)
+	}
 
-	return segments, fmt.Errorf("couldn't get segments from database: %w", err)
+	return segments, nil
 }
 
 func (sr *SegmentRepository) Create(ctx context.Context, s models.Segment) (added models.Segment, err error) {
 	query := `INSERT INTO "segment" (description) VALUES ($1) RETURNING "ID"`
 	lastInsertID := 0
-	err = sr.db.QueryRowxContext(ctx, query, s.Desc).Scan(&lastInsertID)
-	if err == nil {
+	if err = sr.db.QueryRowxContext(ctx, query, s.Desc).Scan(&lastInsertID); err != nil {
+		return s, fmt.Errorf("couldn't create segment in database: %w", err)
+	} else {
 		s.ID = models.ID(lastInsertID)
 	}
-	return s, fmt.Errorf("couldn't create segment in database: %w", err)
+
+	return s, nil
 }
 
 func (sr *SegmentRepository) Delete(ctx context.Context, id models.ID) error {
@@ -37,6 +41,7 @@ func (sr *SegmentRepository) Delete(ctx context.Context, id models.ID) error {
 		if affected, _ := res.RowsAffected(); affected == 0 {
 			return fmt.Errorf("couldn't delete segment id=%d: %w", id, basic.ErrDoesNotExist)
 		}
+		return nil
 	}
 	return fmt.Errorf("couldn't delete segment id=%d: %w", id, err)
 }
