@@ -23,21 +23,18 @@ type Storage interface {
 }
 
 type SegmentRepository interface {
-	Init(ctx context.Context) error
 	All(ctx context.Context) ([]models.Segment, error)
 	Create(ctx context.Context, s models.Segment) (added models.Segment, err error)
 	Delete(ctx context.Context, id models.ID) error
 }
 
 type SlotRepository interface {
-	Init(ctx context.Context) error
 	All(ctx context.Context) ([]models.Slot, error)
 	Create(ctx context.Context, s models.Slot) (added models.Slot, err error)
 	Delete(ctx context.Context, id models.ID) error
 }
 
 type CreativeRepository interface {
-	Init(ctx context.Context) error
 	All(ctx context.Context) ([]models.Creative, error)
 	Create(ctx context.Context, c models.Creative) (added models.Creative, err error)
 	Delete(ctx context.Context, id models.ID) error
@@ -49,6 +46,7 @@ type CreativeRepository interface {
 }
 
 type StatsRepository interface {
-	AllStats(ctx context.Context) ([]models.Stats, error)
 	StatsSlotSegment(ctx context.Context, slotID, segmentID models.ID) ([]models.Stats, error)
+	UpdateStatsImpression(ctx context.Context, impression models.Impression) error
+	UpdateStatsConversion(ctx context.Context, conversion models.Conversion) error
 }

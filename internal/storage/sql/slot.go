@@ -14,10 +14,6 @@ type SlotRepository struct {
 	db *sqlx.DB
 }
 
-func (sr *SlotRepository) Init(ctx context.Context) error {
-	return nil
-}
-
 func (sr *SlotRepository) All(ctx context.Context) ([]models.Slot, error) {
 	var slots []models.Slot
 	err := sr.db.SelectContext(ctx, &slots, `SELECT * FROM "slot"`)

@@ -50,13 +50,9 @@ func (s *Storage) Init(ctx context.Context) error {
 	db, err := sqlx.ConnectContext(ctx, "postgres", s.cfg.ConnString())
 	if err == nil {
 		s.db = db
-		_ = s.segments.Init(ctx)
 		s.segments.db = s.db
-		_ = s.creatives.Init(ctx)
 		s.creatives.db = s.db
-		_ = s.slots.Init(ctx)
 		s.slots.db = s.db
-		_ = s.stats.Init(ctx)
 		s.stats.db = s.db
 	}
 	return err

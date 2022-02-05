@@ -14,10 +14,6 @@ type CreativeRepository struct {
 	db *sqlx.DB
 }
 
-func (cr *CreativeRepository) Init(ctx context.Context) error {
-	return nil
-}
-
 func (cr *CreativeRepository) All(ctx context.Context) ([]models.Creative, error) {
 	var creatives []models.Creative
 	err := cr.db.SelectContext(ctx, &creatives, `SELECT * FROM "creative"`)

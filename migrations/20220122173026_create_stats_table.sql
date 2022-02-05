@@ -5,8 +5,8 @@ CREATE TABLE "stats"
     "slot_id"     integer NOT NULL,
     "creative_id" integer NOT NULL,
     "segment_id"  integer NOT NULL,
-    "impressions" integer NOT NULL,
-    "conversions" integer NOT NULL,
+    "impressions" integer DEFAULT 0,
+    "conversions" integer DEFAULT 0,
     CONSTRAINT "stats_ID" PRIMARY KEY ("slot_id", "creative_id", "segment_id")
 );
 ALTER TABLE ONLY "stats"

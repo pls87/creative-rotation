@@ -2,7 +2,7 @@ BIN := "./bin/cr"
 REPO=github.com/pls87/creative-rotation
 
 GIT_HASH := $(shell git log --format="%h" -n 1)
-LDFLAGS := -X '${REPO}/cmd/calendar/cmd.Release=develop' -X '${REPO}/cmd/calendar/cmd.BuildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S)' -X '${REPO}/cmd/calendar/cmd.GitHash=$(GIT_HASH)'
+LDFLAGS := -X '${REPO}/cmd/commands.Release=develop' -X '${REPO}/cmd/commands.BuildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S)' -X '${REPO}/cmd/commands.GitHash=$(GIT_HASH)'
 
 build:
 	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd

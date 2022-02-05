@@ -14,10 +14,6 @@ type SegmentRepository struct {
 	db *sqlx.DB
 }
 
-func (sr *SegmentRepository) Init(ctx context.Context) error {
-	return nil
-}
-
 func (sr *SegmentRepository) All(ctx context.Context) ([]models.Segment, error) {
 	var segments []models.Segment
 	err := sr.db.SelectContext(ctx, &segments, `SELECT * FROM "segment"`)
