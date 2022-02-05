@@ -10,7 +10,7 @@ COPY go.sum .
 
 RUN go mod download
 
-COPY . ${CODE_DIR}
+COPY . .
 
 RUN go build -ldflags "$LDFLAGS" -o ${BIN_FILE} ./cmd
 
