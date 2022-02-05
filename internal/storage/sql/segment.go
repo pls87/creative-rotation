@@ -28,10 +28,9 @@ func (sr *SegmentRepository) Create(ctx context.Context, s models.Segment) (adde
 	lastInsertID := 0
 	if err = sr.db.QueryRowxContext(ctx, query, s.Desc).Scan(&lastInsertID); err != nil {
 		return s, fmt.Errorf("couldn't create segment in database: %w", err)
-	} else {
-		s.ID = models.ID(lastInsertID)
 	}
 
+	s.ID = models.ID(lastInsertID)
 	return s, nil
 }
 

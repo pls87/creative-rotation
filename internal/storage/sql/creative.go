@@ -28,10 +28,9 @@ func (cr *CreativeRepository) Create(ctx context.Context, c models.Creative) (ad
 	lastInsertID := 0
 	if err = cr.db.QueryRowxContext(ctx, query, c.Desc).Scan(&lastInsertID); err != nil {
 		return c, fmt.Errorf("couldn't create creative in database: %w", err)
-	} else {
-		c.ID = models.ID(lastInsertID)
 	}
 
+	c.ID = models.ID(lastInsertID)
 	return c, nil
 }
 
