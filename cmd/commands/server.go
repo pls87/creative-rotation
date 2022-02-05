@@ -30,9 +30,7 @@ var runServerCmd = &cobra.Command{
 			syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 		defer cancel()
 
-		go func() {
-			<-ctx.Done()
-
+		shutDown := func() {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 			defer cancel()
 
@@ -43,7 +41,7 @@ var runServerCmd = &cobra.Command{
 			if err := server.Stop(ctx); err != nil {
 				logg.Error("failed to stop http internal: " + err.Error())
 			}
-		}()
+		}
 
 		logg.Info("connecting to storage...")
 		var err error
@@ -65,11 +63,13 @@ var runServerCmd = &cobra.Command{
 		logg.Info("app is running...")
 
 		if err := server.Start(ctx); err != nil {
-			logg.Error("failed to start http internal: " + err.Error())
+			logg.Error("failed to start http server: " + err.Error())
 			cancel()
 			os.Exit(1)
 		}
 
 		<-ctx.Done()
+
+		shutDown()
 	},
 }

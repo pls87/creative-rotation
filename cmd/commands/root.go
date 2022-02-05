@@ -21,8 +21,7 @@ var (
 
 	rootCmd = &cobra.Command{
 		Use:   "cr",
-		Short: "",
-		Long:  `<Some long desc here...>`,
+		Short: "Creative rotation app",
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println("Noop. Exiting....")
 		},
