@@ -154,11 +154,11 @@ func (s *CreativeService) TrackImpression(w http.ResponseWriter, r *http.Request
 
 func (s *CreativeService) Next(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	slotID, ok := s.handleIDQuery("slot_id", ctx, w, r)
+	slotID, ok := s.handleIDQuery(ctx, "slot_id", w, r)
 	if !ok {
 		return
 	}
-	segmentID, ok := s.handleIDQuery("segment_id", ctx, w, r)
+	segmentID, ok := s.handleIDQuery(ctx, "segment_id", w, r)
 	if !ok {
 		return
 	}
@@ -172,7 +172,7 @@ func (s *CreativeService) Next(w http.ResponseWriter, r *http.Request) {
 	s.resp.json(ctx, w, map[string]models.Creative{"creative": creative})
 }
 
-func (s *CreativeService) handleIDQuery(param string, ctx context.Context, w http.ResponseWriter,
+func (s *CreativeService) handleIDQuery(ctx context.Context, param string, w http.ResponseWriter,
 	r *http.Request) (models.ID, bool) {
 	IDs := r.URL.Query()[param]
 	if len(IDs) == 0 {
