@@ -75,21 +75,6 @@ var updateStatsCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		go func() {
-			for e := range impErrors {
-				logg.Errorf("error while consuming impression :%s", e)
-			}
-		}()
-
-		go func() {
-			for e := range impressions {
-				err = storage.Stats().TrackConversion(context.Background(), e.CreativeID, e.SlotID, e.SegmentID)
-				if err != nil {
-					logg.Errorf("couln't update impression stats by event %v: %s", e, err)
-				}
-			}
-		}()
-
 		logg.Info("connecting to conversion queue")
 		conversions, convErrors, err := consumer.Consume("StatsUpdater", stats.ConversionQueue)
 		if err != nil {
@@ -98,21 +83,27 @@ var updateStatsCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		go func() {
-			for e := range convErrors {
+		var e error
+		var ev stats.Event
+		for {
+			select {
+			case e = <-impErrors:
+				logg.Errorf("error while consuming impression: %s", e)
+			case e = <-convErrors:
 				logg.Errorf("error while consuming conversion: %s", e)
-			}
-		}()
-
-		go func() {
-			for e := range conversions {
-				err = storage.Stats().TrackConversion(context.Background(), e.CreativeID, e.SlotID, e.SegmentID)
+			case ev = <-impressions:
+				err = storage.Stats().TrackImpression(context.Background(), ev.CreativeID, ev.SlotID, ev.SegmentID)
+				if err != nil {
+					logg.Errorf("couln't update impression stats by event %v: %s", e, err)
+				}
+			case ev = <-conversions:
+				err = storage.Stats().TrackConversion(context.Background(), ev.CreativeID, ev.SlotID, ev.SegmentID)
 				if err != nil {
 					logg.Errorf("couln't update conversion stats by event %v: %s", e, err)
 				}
+			case <-ctx.Done():
+				return
 			}
-		}()
-
-		<-ctx.Done()
+		}
 	},
 }
