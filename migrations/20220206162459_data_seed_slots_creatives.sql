@@ -1,5 +1,12 @@
 -- +goose Up
 -- +goose StatementBegin
+-- show all cars creatives on drom.ru homepage
+INSERT INTO "slot_creative" (slot_id, creative_id)
+VALUES (1, 5),
+       (1, 6),
+       (1, 7),
+       (1, 8);
+
 -- show all except cars creatives on ozon.ru homepage
 INSERT INTO "slot_creative" (slot_id, creative_id)
 VALUES (2, 1),

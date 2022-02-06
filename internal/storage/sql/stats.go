@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/pls87/creative-rotation/internal/storage/basic"
 	"github.com/pls87/creative-rotation/internal/storage/models"
 )
 
@@ -44,18 +45,23 @@ func (sr *StatsRepository) TrackConversion(ctx context.Context, crID, slotID, se
 
 func (sr *StatsRepository) updateStats(ctx context.Context, kind statsKind,
 	creativeID, slotID, segmentID models.ID) error {
-	query := `INSERT INTO "stats" ("$1", creative_id, slot_id, segment_id) 
-				SELECT * FROM  (VALUES (1, $2, $3, $4)) AS i($1, creative_id, slot_id, segment_id)
+	query := fmt.Sprintf(`INSERT INTO "stats" (%s, creative_id, slot_id, segment_id) 
+				SELECT * FROM  (VALUES (1, $2, $3, $4)) AS i(%s, creative_id, slot_id, segment_id)
 				WHERE EXISTS (
 				    SELECT FROM "slot_creative" sc
    					WHERE  sc.slot_id = i.slot_id
    					AND    sc.creative_id =i.creative_id
 				)
-			ON CONFLICT (creative_id, slot_id, segment_id) DO UPDATE SET "$1" = "$1" + 1`
-	_, err := sr.db.ExecContext(ctx, query, kind.String(), creativeID, slotID, segmentID)
+			ON CONFLICT (creative_id, slot_id, segment_id) DO UPDATE SET $1 = EXCLUDED.$1 + 1`, kind, kind)
+
+	res, err := sr.db.ExecContext(ctx, query, kind.String(), creativeID, slotID, segmentID)
 	if err != nil {
 		return fmt.Errorf("couldn't update stats for creative_id=%d, slot_id=%d, segment_id=%d: %w",
 			creativeID, slotID, segmentID, err)
+	}
+
+	if affected, _ := res.RowsAffected(); affected == 0 {
+		return fmt.Errorf("couldn't update stats: %w", basic.ErrCreativeNotInSlot)
 	}
 
 	return nil
