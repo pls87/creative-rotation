@@ -1,8 +1,13 @@
+//go:build integration
+// +build integration
+
 package helpers
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -64,9 +69,9 @@ func (h *HTTPHelper) sendRequest(method, url string, query map[string]string,
 }
 
 func (h *HTTPHelper) handleResponse(resp *http.Response) (code int, respBody []byte, err error) {
-	respBody = make([]byte, 0, 1024)
+	respBody = make([]byte, 4096)
 	_, err = resp.Body.Read(respBody)
-	if err != nil {
+	if err != nil && !errors.Is(err, io.EOF) {
 		return 0, nil, err
 	}
 

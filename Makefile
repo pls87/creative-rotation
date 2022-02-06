@@ -23,16 +23,16 @@ test:
 	go test -race ./internal/...
 
 build-img-migrations:
-	docker build --no-cache -t cr:migrations migrations/.
+	docker build -t cr:migrations migrations/.
 
 build-img-api:
-	docker build --no-cache -t cr:api -f build/api/Dockerfile .
+	docker build -t cr:api -f build/api/Dockerfile .
 
 build-img-stats:
-	docker build --no-cache -t cr:stats -f build/stats/Dockerfile .
+	docker build -t cr:stats -f build/stats/Dockerfile .
 
 build-img-integration:
-	docker build --no-cache -t cr:intergration -f build/integration/Dockerfile .
+	docker build --no-cache -t cr:integration-tests -f build/integration/Dockerfile .
 
 run-database-rabbit:
 	./scripts/run-database-rabbit.sh

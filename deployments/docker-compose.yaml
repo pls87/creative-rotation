@@ -6,7 +6,7 @@ services:
     env_file:
       - db.env
     ports:
-      - "${DB_PORT}:5432"
+      - "${DB_PORT}5432"
     networks:
       main:
         aliases:
@@ -26,7 +26,7 @@ services:
   rabbit:
     image: rabbitmq:3-alpine
     ports:
-      - "${RABBIT_PORT}:5672"
+      - "${RABBIT_PORT}5672"
     env_file:
       - rabbit.env
     networks:
@@ -43,8 +43,6 @@ services:
     environment:
       POSTGRES_HOST: db
       RABBIT_HOST: rabbit
-      RABBIT_PORT: 5672
-      STATS_INTERVAL: 1
     networks:
       main:
         aliases:
@@ -55,11 +53,13 @@ services:
       - db
       - migrations
       - stats_updater
+      - rabbit
     env_file:
       - db.env
+      - rabbit.env
     environment:
       POSTGRES_HOST: db
-      API_PORT: 8080
+      RABBIT_HOST: rabbit
     networks:
       main:
         aliases:

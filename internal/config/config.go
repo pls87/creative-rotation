@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/spf13/viper"
 )
@@ -20,7 +21,7 @@ type LoggerConf struct {
 
 type DBConf struct {
 	Host     string `mapstructure:"POSTGRES_HOST"`
-	Port     string `mapstructure:"POSTGRES_PORT"`
+	Port     int    `mapstructure:"POSTGRES_PORT"`
 	Name     string `mapstructure:"POSTGRES_DB"`
 	User     string `mapstructure:"POSTGRES_USER"`
 	Password string `mapstructure:"POSTGRES_PASSWORD"`
@@ -39,7 +40,7 @@ type QueueConf struct {
 
 func (db *DBConf) ConnString() string {
 	return fmt.Sprintf(`host=%s port=%s user=%s password=%s dbname=%s sslmode=disable`,
-		db.Host, db.Port, db.User, db.Password, db.Name)
+		db.Host, strconv.Itoa(db.Port), db.User, db.Password, db.Name)
 }
 
 type APIConf struct {
@@ -51,6 +52,7 @@ func (cfg *Config) bindEnv() {
 	viper.AutomaticEnv()
 	// TODO: this looks strange - need to understand how to unmarshal without listing ENVVARS one-by-one
 	_ = viper.BindEnv("POSTGRES_HOST")
+	_ = viper.BindEnv("POSTGRES_PORT")
 	_ = viper.BindEnv("POSTGRES_DB")
 	_ = viper.BindEnv("POSTGRES_USER")
 	_ = viper.BindEnv("POSTGRES_PASSWORD")
@@ -80,10 +82,10 @@ func (cfg *Config) bindFile(cfgFile string) {
 func New(cfgFile string) Config {
 	cfg := Config{
 		Log:   LoggerConf{Level: "debug"},
-		DB:    DBConf{},
-		API:   APIConf{Port: 8083},
+		DB:    DBConf{Port: 5432},
+		API:   APIConf{Port: 8080},
 		Stats: StatsConf{Interval: 1},
-		Queue: QueueConf{},
+		Queue: QueueConf{Port: 5672},
 	}
 
 	cfg.bindEnv()

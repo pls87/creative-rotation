@@ -1,18 +1,18 @@
 -- +goose Up
 -- +goose StatementBegin
-INSERT INTO "segment" ("ID", "description")
-VALUES (1, 'Girls < 10'),
-       (2, 'Girls 10+'),
-       (3, 'Boys 10+'),
-       (4, 'Boys <10'),
-       (5, 'Children 10+'),
-       (6, 'Children <10'),
-       (7, 'Man <30'),
-       (8, 'Man 30+'),
-       (9, 'Man 60+'),
-       (10, 'Woman <30'),
-       (11, 'Woman 30+'),
-       (12, 'Woman 60+');
+INSERT INTO "segment" ("description")
+VALUES ('Girls < 10'),
+       ('Girls 10+'),
+       ('Boys 10+'),
+       ('Boys <10'),
+       ('Children 10+'),
+       ('Children <10'),
+       ('Man <30'),
+       ('Man 30+'),
+       ('Man 60+'),
+       ('Woman <30'),
+       ('Woman 30+'),
+       ('Woman 60+');
 -- +goose StatementEnd
 
 -- +goose Down

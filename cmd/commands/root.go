@@ -11,7 +11,7 @@ import (
 
 const (
 	retries  = 5
-	retryGap = 2 * time.Second
+	retryGap = 5 * time.Second
 )
 
 var (

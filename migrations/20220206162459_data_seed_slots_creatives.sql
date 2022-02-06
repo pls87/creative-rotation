@@ -32,13 +32,13 @@ VALUES (4, 9),
 
 -- show perfume and cars creatives on letu.ru man parfime
 INSERT INTO "slot_creative" (slot_id, creative_id)
-VALUES (6, 9),
-       (6, 10),
-       (6, 11),
-       (6, 5),
-       (6, 6),
-       (6, 7),
-       (6, 8);
+VALUES (5, 9),
+       (5, 10),
+       (5, 11),
+       (5, 5),
+       (5, 6),
+       (5, 7),
+       (5, 8);
 -- +goose StatementEnd
 
 -- +goose Down

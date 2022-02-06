@@ -1,17 +1,17 @@
 -- +goose Up
 -- +goose StatementBegin
-INSERT INTO "creative" ("ID", "description")
-VALUES (1, 'Lego Technic'),
-       (2, 'Lego Friends'),
-       (3, 'Lego Duplo'),
-       (4, 'Lego Architecture'),
-       (5, 'KIA Stinger'),
-       (6, 'KIA Sportage'),
-       (7, 'Mazda CX-9'),
-       (8, 'Chevrolet Tahoe'),
-       (9, 'Chanel #5'),
-       (10, 'Chanel Chance'),
-       (11, 'Dior Homme');
+INSERT INTO "creative" ("description")
+VALUES ('Lego Technic'),
+       ('Lego Friends'),
+       ('Lego Duplo'),
+       ('Lego Architecture'),
+       ('KIA Stinger'),
+       ('KIA Sportage'),
+       ('Mazda CX-9'),
+       ('Chevrolet Tahoe'),
+       ('Chanel #5'),
+       ('Chanel Chance'),
+       ('Dior Homme');
 
 -- +goose StatementEnd
 

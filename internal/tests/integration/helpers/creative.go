@@ -1,3 +1,6 @@
+//go:build integration
+// +build integration
+
 package helpers
 
 import (
@@ -14,7 +17,7 @@ func NewCreativeHelper(baseURL string) *CreativeHelper {
 }
 
 func (ch *CreativeHelper) New(desc string) (code int, body []byte, err error) {
-	return ch.httpHelper.Post("/creative", []byte(fmt.Sprintf(`{"desc:"%s"}`, desc)))
+	return ch.httpHelper.Post("/creative", []byte(fmt.Sprintf(`{"desc": "%s"}`, desc)))
 }
 
 func (ch *CreativeHelper) All(desc string) (code int, body []byte, err error) {
