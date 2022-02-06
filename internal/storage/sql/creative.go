@@ -3,7 +3,6 @@ package sql
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/pls87/creative-rotation/internal/storage/basic"
@@ -82,24 +81,4 @@ func (cr *CreativeRepository) InSlot(ctx context.Context, creativeID, slotID mod
 	defer rows.Close()
 
 	return rows.Next(), nil
-}
-
-func (cr *CreativeRepository) TrackImpression(ctx context.Context, imp models.Impression) error {
-	query := `INSERT INTO "impression" (creative_id, slot_id, segment_id, time) VALUES ($1, $2, $3, $4)`
-	_, err := cr.db.ExecContext(ctx, query, imp.CreativeID, imp.SlotID, imp.SegmentID, time.Now())
-	if err != nil {
-		return fmt.Errorf("couldn't track impression: %w", err)
-	}
-
-	return nil
-}
-
-func (cr *CreativeRepository) TrackConversion(ctx context.Context, conversion models.Conversion) error {
-	query := `INSERT INTO "conversion" (creative_id, slot_id, segment_id, time) VALUES ($1, $2, $3, $4)`
-	_, err := cr.db.ExecContext(ctx, query, conversion.CreativeID, conversion.SlotID, conversion.SegmentID, time.Now())
-	if err != nil {
-		return fmt.Errorf("couldn't track conversion: %w", err)
-	}
-
-	return nil
 }

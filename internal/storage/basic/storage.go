@@ -41,12 +41,10 @@ type CreativeRepository interface {
 	ToSlot(ctx context.Context, creativeID, slotID models.ID) error
 	FromSlot(ctx context.Context, creativeID, slotID models.ID) error
 	InSlot(ctx context.Context, creativeID, slotID models.ID) (bool, error)
-	TrackImpression(ctx context.Context, impression models.Impression) error
-	TrackConversion(ctx context.Context, conversion models.Conversion) error
 }
 
 type StatsRepository interface {
 	StatsSlotSegment(ctx context.Context, slotID, segmentID models.ID) ([]models.Stats, error)
-	UpdateStatsImpression(ctx context.Context, impression models.Impression) error
-	UpdateStatsConversion(ctx context.Context, conversion models.Conversion) error
+	TrackImpression(ctx context.Context, creativeID, slotID, segmentID models.ID) error
+	TrackConversion(ctx context.Context, creativeID, slotID, segmentID models.ID) error
 }

@@ -15,8 +15,8 @@ const (
 	conversions
 )
 
-func (d statsKind) String() string {
-	return [...]string{"impressions", "conversions"}[d]
+func (k statsKind) String() string {
+	return [...]string{"impressions", "conversions"}[k]
 }
 
 type StatsRepository struct {
@@ -34,19 +34,24 @@ func (sr *StatsRepository) StatsSlotSegment(ctx context.Context, slotID, segment
 	return stats, nil
 }
 
-func (sr *StatsRepository) UpdateStatsImpression(ctx context.Context, impression models.Impression) error {
-	return sr.updateStats(ctx, impressions, impression.CreativeID, impression.SlotID, impression.SegmentID)
+func (sr *StatsRepository) TrackImpression(ctx context.Context, crID, slotID, segID models.ID) error {
+	return sr.updateStats(ctx, impressions, crID, slotID, segID)
 }
 
-func (sr *StatsRepository) UpdateStatsConversion(ctx context.Context, conversion models.Conversion) error {
-	return sr.updateStats(ctx, conversions, conversion.CreativeID, conversion.SlotID, conversion.SegmentID)
+func (sr *StatsRepository) TrackConversion(ctx context.Context, crID, slotID, segID models.ID) error {
+	return sr.updateStats(ctx, conversions, crID, slotID, segID)
 }
 
 func (sr *StatsRepository) updateStats(ctx context.Context, kind statsKind,
 	creativeID, slotID, segmentID models.ID) error {
 	query := `INSERT INTO "stats" ("$1", creative_id, slot_id, segment_id) 
-		VALUES (1, $2, $3, $4)
-		ON CONFLICT (creative_id, slot_id, segment_id) DO UPDATE SET "$1" = "$1" + 1;`
+				SELECT * FROM  (VALUES (1, $2, $3, $4)) AS i($1, creative_id, slot_id, segment_id)
+				WHERE EXISTS (
+				    SELECT FROM "slot_creative" sc
+   					WHERE  sc.slot_id = i.slot_id
+   					AND    sc.creative_id =i.creative_id
+				)
+			ON CONFLICT (creative_id, slot_id, segment_id) DO UPDATE SET "$1" = "$1" + 1`
 	_, err := sr.db.ExecContext(ctx, query, kind.String(), creativeID, slotID, segmentID)
 	if err != nil {
 		return fmt.Errorf("couldn't update stats for creative_id=%d, slot_id=%d, segment_id=%d: %w",

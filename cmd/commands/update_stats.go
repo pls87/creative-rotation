@@ -7,11 +7,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/jmoiron/sqlx"
-
 	// init postgres driver.
 	_ "github.com/lib/pq"
 	"github.com/pls87/creative-rotation/internal/stats"
+	"github.com/pls87/creative-rotation/internal/storage"
 	"github.com/spf13/cobra"
 )
 
@@ -51,16 +50,14 @@ var updateStatsCmd = &cobra.Command{
 				os.Exit(1)
 			}
 		}
-		var db *sqlx.DB
-		var err error
 
+		storage := storage.New(cfg.DB)
 		retry(func() error {
-			db, err = sqlx.Connect("postgres", cfg.DB.ConnString())
-			return err
+			return storage.Init(ctx)
 		})
 
 		logg.Info("connected to storage")
-		defer db.Close()
+		defer storage.Dispose()
 
 		consumer := stats.NewConsumer(cfg.Queue)
 		retry(func() error {
@@ -85,10 +82,10 @@ var updateStatsCmd = &cobra.Command{
 		}()
 
 		go func() {
-			for event := range impressions {
-				err = updateImpressions(db, event)
+			for e := range impressions {
+				err = storage.Stats().TrackConversion(context.Background(), e.CreativeID, e.SlotID, e.SegmentID)
 				if err != nil {
-					logg.Errorf("couln't update impression stats by event %v: %s", event, err)
+					logg.Errorf("couln't update impression stats by event %v: %s", e, err)
 				}
 			}
 		}()
@@ -108,22 +105,14 @@ var updateStatsCmd = &cobra.Command{
 		}()
 
 		go func() {
-			for event := range conversions {
-				err = updateConversions(db, event)
+			for e := range conversions {
+				err = storage.Stats().TrackConversion(context.Background(), e.CreativeID, e.SlotID, e.SegmentID)
 				if err != nil {
-					logg.Errorf("couln't update conversion stats by event %v: %s", event, err)
+					logg.Errorf("couln't update conversion stats by event %v: %s", e, err)
 				}
 			}
 		}()
 
 		<-ctx.Done()
 	},
-}
-
-func updateImpressions(db *sqlx.DB, event stats.Event) error {
-	return nil
-}
-
-func updateConversions(db *sqlx.DB, event stats.Event) error {
-	return nil
 }
