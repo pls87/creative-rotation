@@ -12,7 +12,7 @@ services:
         aliases:
           - db
   migrations:
-    build: ../migrations/.
+    image: cr:migrations
     depends_on:
       - db
     env_file:
@@ -37,7 +37,7 @@ services:
     image: cr:stats
     depends_on:
       - db
-      - broker
+      - rabbit
     env_file:
       - db.env
     environment:
