@@ -22,9 +22,10 @@ var runServerCmd = &cobra.Command{
 	Use:   "server",
 	Short: "Runs REST API for creative rotation app",
 	Run: func(cmd *cobra.Command, args []string) {
+		// TODO Clean up this long method
 		logg.Info(cfg)
 		storage := storage.New(cfg.DB)
-		stats := stats.NewProducer(logg, cfg.Queue)
+		stats := stats.NewProducer(cfg.Queue)
 		cr := app.New(logg, storage, stats)
 
 		server := http.NewServer(logg, cr, cfg.API)
@@ -43,7 +44,9 @@ var runServerCmd = &cobra.Command{
 				logg.Error("failed to close storage connection: " + err.Error())
 			}
 
-			stats.Dispose()
+			if err := stats.Dispose(); err != nil {
+				logg.Error("failed to close rabbit connection: " + err.Error())
+			}
 
 			if err := server.Stop(ctx); err != nil {
 				logg.Error("failed to stop http internal: " + err.Error())
@@ -73,7 +76,7 @@ var runServerCmd = &cobra.Command{
 			return storage.Init(ctx)
 		})
 
-		logg.Info("connecting to broker...")
+		logg.Info("connecting to rabbit...")
 		retry(func() error {
 			return stats.Init()
 		})

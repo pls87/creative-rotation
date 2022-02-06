@@ -34,8 +34,8 @@ build-img-stats:
 build-img-integration:
 	docker build -t cr:intergration -f build/integration/Dockerfile .
 
-run-database-kafka:
-	./scripts/run-database-kafka.sh
+run-database-rabbit:
+	./scripts/run-database-rabbit.sh
 
 run-docker-api-with-tool: build-img-api build-img-stats build-img-migrations
 	./scripts/run-api-with-tool.sh

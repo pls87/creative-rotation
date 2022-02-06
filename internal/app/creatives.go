@@ -43,7 +43,7 @@ func (a *CreativeApp) RemoveFromSlot(ctx context.Context, creativeID, slotID mod
 }
 
 func (a *CreativeApp) TrackConversion(ctx context.Context, conversion models.Conversion) error {
-	return a.stats.Produce("conversion", stats.Event{
+	return a.stats.Produce(stats.ConversionKey, stats.Event{
 		CreativeID: conversion.CreativeID,
 		SegmentID:  conversion.SegmentID,
 		SlotID:     conversion.SlotID,
@@ -52,7 +52,7 @@ func (a *CreativeApp) TrackConversion(ctx context.Context, conversion models.Con
 }
 
 func (a *CreativeApp) TrackImpression(ctx context.Context, impression models.Impression) error {
-	return a.stats.Produce("conversion", stats.Event{
+	return a.stats.Produce(stats.ImpressionKey, stats.Event{
 		CreativeID: impression.CreativeID,
 		SegmentID:  impression.SegmentID,
 		SlotID:     impression.SlotID,

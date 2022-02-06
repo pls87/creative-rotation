@@ -31,8 +31,10 @@ type StatsConf struct {
 }
 
 type QueueConf struct {
-	Host string `mapstructure:"KAFKA_HOST"`
-	Port int    `mapstructure:"KAFKA_PORT"`
+	Host     string `mapstructure:"RABBIT_HOST"`
+	Port     int    `mapstructure:"RABBIT_PORT"`
+	User     string `mapstructure:"RABBITMQ_DEFAULT_USER"`
+	Password string `mapstructure:"RABBITMQ_DEFAULT_PASS"`
 }
 
 func (db *DBConf) ConnString() string {
@@ -41,8 +43,8 @@ func (db *DBConf) ConnString() string {
 }
 
 type APIConf struct {
-	Host string `mapstructure:"API_HOST" toml:"host"`
-	Port int    `mapstructure:"API_PORT" toml:"port"`
+	Host string `mapstructure:"API_HOST"`
+	Port int    `mapstructure:"API_PORT"`
 }
 
 func (cfg *Config) bindEnv() {
@@ -55,8 +57,10 @@ func (cfg *Config) bindEnv() {
 	_ = viper.BindEnv("STATS_INTERVAL")
 	_ = viper.BindEnv("API_HOST")
 	_ = viper.BindEnv("API_PORT")
-	_ = viper.BindEnv("KAFKA_HOST")
-	_ = viper.BindEnv("KAFKA_PORT")
+	_ = viper.BindEnv("RABBIT_HOST")
+	_ = viper.BindEnv("RABBIT_PORT")
+	_ = viper.BindEnv("RABBITMQ_DEFAULT_USER")
+	_ = viper.BindEnv("RABBITMQ_DEFAULT_PASS")
 	_ = viper.Unmarshal(&cfg.Log)
 	_ = viper.Unmarshal(&cfg.DB)
 	_ = viper.Unmarshal(&cfg.API)
@@ -79,6 +83,7 @@ func New(cfgFile string) Config {
 		DB:    DBConf{},
 		API:   APIConf{Port: 8083},
 		Stats: StatsConf{Interval: 1},
+		Queue: QueueConf{},
 	}
 
 	cfg.bindEnv()

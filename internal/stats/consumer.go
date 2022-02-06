@@ -3,56 +3,80 @@ package stats
 import (
 	"encoding/json"
 	"fmt"
-	"net"
-	"strconv"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/pls87/creative-rotation/internal/config"
-	"github.com/pls87/creative-rotation/internal/logger"
+	"github.com/streadway/amqp"
 )
 
 type Consumer interface {
-	Init(cfg config.QueueConf) error
-	Dispose() error
-	Consume(topic string) (chan Event, error)
+	Client
+	Consume(tag, queue string) (messages chan Event, errors chan error, err error)
 }
 
-type KafkaConsumer struct {
-	c    *kafka.Consumer
-	logg *logger.Logger
-	cfg  config.QueueConf
+type RabbitConsumer struct {
+	RabbitClient
 }
 
-func (kc *KafkaConsumer) Init() (err error) {
-	kc.c, err = kafka.NewConsumer(&kafka.ConfigMap{
-		"bootstrap.servers": net.JoinHostPort(kc.cfg.Host, strconv.Itoa(kc.cfg.Port)),
-	})
+func (nc *RabbitConsumer) openChannel() (ch *amqp.Channel, err error) {
+	ch, err = nc.conn.Channel()
 	if err != nil {
-		return fmt.Errorf("couldn't initialize consumer: %w", err)
+		return nil, fmt.Errorf("couldn't open channel: %w", err)
 	}
-	return nil
+
+	return ch, err
 }
 
-func (kc *KafkaConsumer) Dispose() error {
-	return kc.c.Close()
-}
+func (nc *RabbitConsumer) Consume(tag, queue string) (messages chan Event, errors chan error, err error) {
+	var ch *amqp.Channel
+	if ch, err = nc.openChannel(); err != nil {
+		return nil, nil, fmt.Errorf("error while consuming messages: %w", err)
+	}
 
-func (kc *KafkaConsumer) Consume(topic string) (events chan Event, err error) {
-	err = kc.c.SubscribeTopics([]string{topic}, nil)
+	var deliveries <-chan amqp.Delivery
+	deliveries, err = ch.Consume(
+		queue, // name
+		tag,   // consumerTag,
+		false, // noAck
+		false, // exclusive
+		false, // noLocal
+		false, // noWait
+		nil,   // arguments
+	)
 	if err != nil {
-		return nil, fmt.Errorf("couldn't subscribe topic %s: %w", topic, err)
+		return nil, nil, fmt.Errorf("error while consuming messages: %w", err)
 	}
-	events = make(chan Event)
-	var ev Event
-	for e := range kc.c.Events() {
-		msg := e.String()
-		err = json.Unmarshal([]byte(msg), &ev)
-		if err != nil {
-			kc.logg.Errorf("couldn't unmarshal the message: %s: %s", msg, err)
-			continue
+
+	messages = make(chan Event)
+	errors = make(chan error)
+
+	go func() {
+		defer func() {
+			close(messages)
+			_ = ch.Close()
+			close(errors)
+		}()
+		var e error
+		for d := range deliveries {
+			if e = d.Ack(false); e != nil {
+				errors <- fmt.Errorf("message couldn't be acknowledged: %w", e)
+				continue
+			}
+			var msg Event
+			if e = json.Unmarshal(d.Body, &msg); e != nil {
+				errors <- fmt.Errorf("message couldn't be parsed: %w", e)
+				continue
+			}
+			messages <- msg
 		}
-		events <- ev
-	}
+	}()
 
-	return events, nil
+	return messages, errors, nil
+}
+
+func NewConsumer(c config.QueueConf) Consumer {
+	return &RabbitConsumer{
+		RabbitClient{
+			cfg: c,
+		},
+	}
 }

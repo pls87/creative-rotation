@@ -3,76 +3,56 @@ package stats
 import (
 	"encoding/json"
 	"fmt"
-	"net"
-	"strconv"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/pls87/creative-rotation/internal/config"
-	"github.com/pls87/creative-rotation/internal/logger"
+	"github.com/streadway/amqp"
 )
 
 type Producer interface {
-	Init() error
-	Dispose()
-	Produce(topic string, msg Event) error
+	Client
+	Produce(routingKey string, message Event) error
 }
 
-type KafkaProducer struct {
-	p    *kafka.Producer
-	cfg  config.QueueConf
-	logg *logger.Logger
+type RabbitProducer struct {
+	RabbitClient
 }
 
-func (kp *KafkaProducer) Init() (err error) {
-	kp.p, err = kafka.NewProducer(&kafka.ConfigMap{
-		"bootstrap.servers": net.JoinHostPort(kp.cfg.Host, strconv.Itoa(kp.cfg.Port)),
-	})
+func (ap *RabbitProducer) openChannel() (ch *amqp.Channel, err error) {
+	ch, err = ap.conn.Channel()
 	if err != nil {
-		return fmt.Errorf("couldn't initialize producer: %w", err)
+		return nil, fmt.Errorf("couldn't open channel: %w", err)
 	}
 
-	e := <-kp.p.Events()
-	if er, ok := e.(kafka.Error); ok {
-		return fmt.Errorf("couldn't initialize producer: %w", er)
-	}
-
-	go func() {
-		for e := range kp.p.Events() {
-			if ev, ok := e.(*kafka.Message); ok {
-				if ev.TopicPartition.Error != nil {
-					kp.logg.Errorf("kafka delivery failed: %v", ev.TopicPartition)
-				}
-			}
-		}
-	}()
-
-	return nil
+	return ch, err
 }
 
-func (kp *KafkaProducer) Dispose() {
-	kp.p.Close()
-}
-
-func (kp *KafkaProducer) Produce(topic string, msg Event) error {
-	body, err := json.Marshal(msg)
+func (ap *RabbitProducer) Produce(routingKey string, message Event) (err error) {
+	var body []byte
+	body, err = json.Marshal(message)
 	if err != nil {
-		return fmt.Errorf("couldn't unmarshal message %v: %w", msg, err)
-	}
-	err = kp.p.Produce(&kafka.Message{
-		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-		Value:          body,
-	}, nil)
-
-	if err != nil {
-		return fmt.Errorf("couldn't produce the message %v: %w", msg, err)
+		return fmt.Errorf("error while publishing: couldn't marshal message: %w", err)
 	}
 
-	return nil
+	var ch *amqp.Channel
+	if ch, err = ap.openChannel(); err != nil {
+		return fmt.Errorf("error while publishing: %w", err)
+	}
+	defer ch.Close()
+
+	if err = ch.Publish(Exchange, routingKey, false, false, amqp.Publishing{
+		ContentType: "application/json",
+		Body:        body,
+	}); err != nil {
+		return fmt.Errorf("error while publishing: %w", err)
+	}
+
+	return err
 }
 
-func NewProducer(logger *logger.Logger, cfg config.QueueConf) Producer {
-	return &KafkaProducer{
-		cfg:  cfg,
-		logg: logger,
+func NewProducer(c config.QueueConf) Producer {
+	return &RabbitProducer{
+		RabbitClient{
+			cfg: c,
+		},
 	}
 }
