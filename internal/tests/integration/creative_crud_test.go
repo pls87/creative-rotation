@@ -10,21 +10,21 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type HttpAPISuite struct {
+type CreativeCRUDSuite struct {
 	suite.Suite
 	url string
 }
 
-func (s *HttpAPISuite) SetupTest() {
+func (s *CreativeCRUDSuite) SetupTest() {
 	s.url = os.Getenv("CR_API_URL")
-	if s.url == "" {
-		s.url = "http://127.0.0.1:8080"
-	}
 }
 
-func (s *HttpAPISuite) NoopTest() {
+func (s *CreativeCRUDSuite) TearDownTest() {
 }
 
-func TestIntegration(t *testing.T) {
+func (s *CreativeCRUDSuite) NoopTest() {
+}
+
+func TestCreativeCRUD(t *testing.T) {
 	suite.Run(t, new(HttpAPISuite))
 }
