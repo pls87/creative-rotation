@@ -6,6 +6,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/pls87/creative-rotation/internal/storage/basic"
 	"github.com/pls87/creative-rotation/internal/storage/models"
+	"github.com/pls87/creative-rotation/internal/storage/sql/errors"
+	"github.com/pls87/creative-rotation/internal/storage/sql/queries"
 )
 
 type SegmentRepository struct {
@@ -14,8 +16,8 @@ type SegmentRepository struct {
 
 func (sr *SegmentRepository) All(ctx context.Context) ([]models.Segment, error) {
 	var segments []models.Segment
-	if err := sr.db.SelectContext(ctx, &segments, ALLQuery("segment")); err != nil {
-		return nil, ALLError("segment", err)
+	if err := sr.db.SelectContext(ctx, &segments, queries.Crud.All(queries.SegmentRelation)); err != nil {
+		return nil, errors.Crud.All(queries.SegmentRelation, err)
 	}
 
 	return segments, nil
@@ -23,8 +25,9 @@ func (sr *SegmentRepository) All(ctx context.Context) ([]models.Segment, error) 
 
 func (sr *SegmentRepository) Create(ctx context.Context, s models.Segment) (added models.Segment, err error) {
 	var lastInsertID int
-	if err = sr.db.QueryRowxContext(ctx, CREATEQuery("segment"), s.Desc).Scan(&lastInsertID); err != nil {
-		return s, CREATEError("segment", err)
+	if err = sr.db.QueryRowxContext(ctx, queries.Crud.Create(queries.SegmentRelation), s.Desc).
+		Scan(&lastInsertID); err != nil {
+		return s, errors.Crud.Create(queries.SegmentRelation, err)
 	}
 
 	s.ID = models.ID(lastInsertID)
@@ -32,12 +35,12 @@ func (sr *SegmentRepository) Create(ctx context.Context, s models.Segment) (adde
 }
 
 func (sr *SegmentRepository) Delete(ctx context.Context, id models.ID) error {
-	res, err := sr.db.ExecContext(ctx, DELETEQuery("segment"), id)
+	res, err := sr.db.ExecContext(ctx, queries.Crud.Delete(queries.SegmentRelation), id)
 	if err == nil {
 		if affected, _ := res.RowsAffected(); affected == 0 {
-			return DELETEError("segment", id, basic.ErrDoesNotExist)
+			return errors.Crud.Delete(queries.SegmentRelation, id, basic.ErrDoesNotExist)
 		}
 		return nil
 	}
-	return DELETEError("segment", id, err)
+	return errors.Crud.Delete(queries.SegmentRelation, id, err)
 }

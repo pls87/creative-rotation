@@ -2,23 +2,13 @@ package sql
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/pls87/creative-rotation/internal/storage/basic"
 	"github.com/pls87/creative-rotation/internal/storage/models"
+	"github.com/pls87/creative-rotation/internal/storage/sql/errors"
+	"github.com/pls87/creative-rotation/internal/storage/sql/queries"
 )
-
-type statsKind int
-
-const (
-	impressions statsKind = iota
-	conversions
-)
-
-func (k statsKind) String() string {
-	return [...]string{"impressions", "conversions"}[k]
-}
 
 type StatsRepository struct {
 	db *sqlx.DB
@@ -26,43 +16,30 @@ type StatsRepository struct {
 
 func (sr *StatsRepository) StatsSlotSegment(ctx context.Context, slotID, segmentID models.ID) ([]models.Stats, error) {
 	var stats []models.Stats
-	err := sr.db.SelectContext(ctx, &stats,
-		`SELECT * FROM "stats" WHERE slot_id=$1 AND segment_id=$2`, slotID, segmentID)
+	err := sr.db.SelectContext(ctx, &stats, queries.Stats.For(), slotID, segmentID)
 	if err != nil {
-		return nil, fmt.Errorf("couldn't get stats for slot_id=%d/segment_id=%d: %w", slotID, segmentID, err)
+		return nil, errors.Stats.For(slotID, segmentID, err)
 	}
 
 	return stats, nil
 }
 
 func (sr *StatsRepository) TrackImpression(ctx context.Context, crID, slotID, segID models.ID) error {
-	return sr.updateStats(ctx, impressions, crID, slotID, segID)
+	return sr.updateStats(ctx, queries.ImpressionField, crID, slotID, segID)
 }
 
 func (sr *StatsRepository) TrackConversion(ctx context.Context, crID, slotID, segID models.ID) error {
-	return sr.updateStats(ctx, conversions, crID, slotID, segID)
+	return sr.updateStats(ctx, queries.ConversionField, crID, slotID, segID)
 }
 
-func (sr *StatsRepository) updateStats(ctx context.Context, kind statsKind,
-	creativeID, slotID, segmentID models.ID) error {
-	query := fmt.Sprintf(`INSERT INTO "stats" (%s, creative_id, slot_id, segment_id) 
-				SELECT * FROM  (VALUES (1, $2, $3, $4)) AS i(%s, creative_id, slot_id, segment_id)
-				WHERE EXISTS (
-				    SELECT FROM "slot_creative" sc
-   					WHERE  sc.slot_id = i.slot_id
-   					AND    sc.creative_id =i.creative_id
-				)
-			ON CONFLICT (creative_id, slot_id, segment_id) DO UPDATE SET $1 = EXCLUDED.$1 + 1`, kind, kind)
-
-	res, err := sr.db.ExecContext(ctx, query, kind.String(), creativeID, slotID, segmentID)
+func (sr *StatsRepository) updateStats(ctx context.Context, field string, crID, slotID, segID models.ID) error {
+	res, err := sr.db.ExecContext(ctx, queries.Stats.Track(field), crID, slotID, segID)
 	if err != nil {
-		return fmt.Errorf("couldn't update stats for creative_id=%d, slot_id=%d, segment_id=%d: %w",
-			creativeID, slotID, segmentID, err)
+		return errors.Stats.Track(field, crID, slotID, segID, err)
 	}
 
 	if affected, _ := res.RowsAffected(); affected == 0 {
-		return fmt.Errorf("couldn't update stats for creative_id=%d, slot_id=%d, segment_id=%d: %w",
-			creativeID, slotID, segmentID, basic.ErrCreativeNotInSlot)
+		return errors.Stats.Track(field, crID, slotID, segID, basic.ErrCreativeNotInSlot)
 	}
 
 	return nil
