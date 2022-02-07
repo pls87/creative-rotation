@@ -9,9 +9,9 @@ type Creative struct {
 
 type SlotCreative struct {
 	SlotID       ID     `db:"slot_id" json:"slot_id"`
-	SlotDesc     string `db:"slot_desc" json:"slot_desc"`
+	SlotDesc     string `db:"slot_desc" json:"slot_desc,omitempty"`
 	CreativeID   ID     `db:"creative_id" json:"creative_id"`
-	CreativeDesc string `db:"creative_desc" json:"creative_desc"`
+	CreativeDesc string `db:"creative_desc" json:"creative_desc,omitempty"`
 }
 
 type Impression struct {
