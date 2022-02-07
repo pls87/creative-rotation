@@ -40,6 +40,11 @@ func (s *CreativeService) New(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if toCreate.Desc == "" {
+		s.resp.badRequest(ctx, w, "creative description can't be empty", err)
+		return
+	}
+
 	created, err := s.creativeApp.New(ctx, toCreate)
 	if err != nil {
 		s.resp.internalServerError(ctx, w, "Unexpected error while saving creative to storage", err)

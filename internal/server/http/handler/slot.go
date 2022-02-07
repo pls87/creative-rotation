@@ -32,7 +32,12 @@ func (s *SlotService) New(w http.ResponseWriter, r *http.Request) {
 	var toCreate models.Slot
 	err := json.NewDecoder(r.Body).Decode(&toCreate)
 	if err != nil {
-		s.resp.badRequest(ctx, w, "failed to parse segment body", err)
+		s.resp.badRequest(ctx, w, "failed to parse slot body", err)
+		return
+	}
+
+	if toCreate.Desc == "" {
+		s.resp.badRequest(ctx, w, "slot description can't be empty", err)
 		return
 	}
 

@@ -4,6 +4,7 @@
 package integration
 
 import (
+	"net/http"
 	"os"
 	"testing"
 
@@ -41,6 +42,18 @@ func (s *CreativeCRUDSuite) TestCreateSegment() {
 	s.testCreateEntity("segment")
 }
 
+func (s *CreativeCRUDSuite) TestCreateEmptyCreative() {
+	s.testCreateEmptyEntity("creative")
+}
+
+func (s *CreativeCRUDSuite) TestCreateEmptySlot() {
+	s.testCreateEmptyEntity("slot")
+}
+
+func (s *CreativeCRUDSuite) TestCreateEmptySegment() {
+	s.testCreateEmptyEntity("segment")
+}
+
 func (s *CreativeCRUDSuite) testCreateEntity(kind string) {
 	desc := gofakeit.BuzzWord()
 	entity := s.entities.New(s.T(), kind, desc)
@@ -58,6 +71,24 @@ func (s *CreativeCRUDSuite) testCreateEntity(kind string) {
 	}
 
 	s.Truef(found, "created entity %v couldn't be found in storage", entity)
+}
+
+func (s *CreativeCRUDSuite) testCreateEmptyEntity(kind string) {
+	code, _, err := s.entities.Push(kind, "")
+
+	s.NoErrorf(err, "No error expected but got", err)
+	s.Equal(code, http.StatusBadRequest)
+
+	entities := s.entities.All(s.T(), kind)
+	found := false
+	for _, e := range entities {
+		if e.Desc == "" {
+			found = true
+			break
+		}
+	}
+
+	s.Falsef(found, "%s with empty description found", kind)
 }
 
 func TestCreativeCRUD(t *testing.T) {
