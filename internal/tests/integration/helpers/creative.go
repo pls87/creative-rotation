@@ -20,7 +20,7 @@ func (ch *CreativeHelper) New(desc string) (code int, body []byte, err error) {
 	return ch.httpHelper.Post("/creative", []byte(fmt.Sprintf(`{"desc": "%s"}`, desc)))
 }
 
-func (ch *CreativeHelper) All(desc string) (code int, body []byte, err error) {
+func (ch *CreativeHelper) All() (code int, body []byte, err error) {
 	return ch.httpHelper.Get("/creative", nil)
 }
 

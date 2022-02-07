@@ -23,7 +23,7 @@ test:
 	go test -race ./internal/...
 
 build-img-migrations:
-	docker build -t cr:migrations migrations/.
+	docker build --no-cache -t cr:migrations migrations/.
 
 build-img-api:
 	docker build -t cr:api -f build/api/Dockerfile .

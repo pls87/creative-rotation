@@ -3,7 +3,7 @@ module github.com/pls87/creative-rotation
 go 1.16
 
 require (
-	github.com/confluentinc/confluent-kafka-go v1.8.2
+	github.com/brianvoe/gofakeit/v6 v6.14.5
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/jmoiron/sqlx v1.2.0
