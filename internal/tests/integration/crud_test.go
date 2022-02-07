@@ -4,6 +4,7 @@
 package integration
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"testing"
@@ -58,7 +59,7 @@ func (s *CreativeCRUDSuite) testCreateEntity(kind string) {
 	desc := gofakeit.BuzzWord()
 	entity := s.entities.New(s.T(), kind, desc)
 
-	s.Greaterf(entity.ID, 0, "ID of created entity should be more than 0")
+	s.Greaterf(entity.ID, 0, fmt.Sprintf("ID of created %s should be more than 0", kind))
 	s.Equal(desc, entity.Desc)
 
 	entities := s.entities.All(s.T(), kind)
@@ -70,13 +71,13 @@ func (s *CreativeCRUDSuite) testCreateEntity(kind string) {
 		}
 	}
 
-	s.Truef(found, "created entity %v couldn't be found in storage", entity)
+	s.Truef(found, "created %s %v couldn't be found in storage", kind, entity)
 }
 
 func (s *CreativeCRUDSuite) testCreateEmptyEntity(kind string) {
 	code, _, err := s.entities.Push(kind, "")
 
-	s.NoErrorf(err, "No error expected but got", err)
+	s.NoErrorf(err, "no error expected but got", err)
 	s.Equal(code, http.StatusBadRequest)
 
 	entities := s.entities.All(s.T(), kind)

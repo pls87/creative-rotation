@@ -13,6 +13,7 @@ type SegmentService struct {
 	logger     *logger.Logger
 	segmentApp app.SegmentApplication
 	resp       *response
+	helper     *helpers
 }
 
 func (s *SegmentService) All(w http.ResponseWriter, r *http.Request) {

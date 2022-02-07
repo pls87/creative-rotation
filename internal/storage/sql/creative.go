@@ -37,7 +37,6 @@ func (cr *CreativeRepository) Slots(ctx context.Context, id models.ID) ([]models
 	var slots []models.Slot
 	query := `SELECT s.* FROM "slot_creative" sc
 		INNER JOIN "slot" s ON sc.slot_id=s."ID"
-		INNER JOIN "creative" cr ON sc.creative_id=cr."ID" 
 		WHERE sc.creative_id = $1`
 	if err := cr.db.SelectContext(ctx, &slots, query, id); err != nil {
 		return nil, fmt.Errorf("couldn't get slots for creative '%d' from database: %w", id, err)

@@ -45,6 +45,7 @@ func (s *Server) Start(ctx context.Context) error {
 	mux.HandleFunc("/impression", s.service.Creatives().TrackImpression).Methods("POST")
 	mux.HandleFunc("/creative/next", s.service.Creatives().Next).Methods("GET")
 	mux.HandleFunc("/slot", s.service.Slots().All).Methods("GET")
+	mux.HandleFunc("/slot/{slot_id:[0-9]+}/creative", s.service.Slots().Creatives).Methods("GET")
 	mux.HandleFunc("/slot", s.service.Slots().New).Methods("POST")
 	mux.HandleFunc("/segment", s.service.Segments().All).Methods("GET")
 	mux.HandleFunc("/segment", s.service.Segments().New).Methods("POST")

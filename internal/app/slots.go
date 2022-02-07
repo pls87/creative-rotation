@@ -11,6 +11,7 @@ import (
 type SlotApplication interface {
 	All(ctx context.Context) ([]models.Slot, error)
 	New(ctx context.Context, s models.Slot) (created models.Slot, err error)
+	Creatives(ctx context.Context, slotID models.ID) ([]models.Creative, error)
 }
 
 type SlotApp struct {
@@ -24,4 +25,8 @@ func (a *SlotApp) All(ctx context.Context) (created []models.Slot, err error) {
 
 func (a *SlotApp) New(ctx context.Context, s models.Slot) (created models.Slot, err error) {
 	return a.storage.Slots().Create(ctx, s)
+}
+
+func (a *SlotApp) Creatives(ctx context.Context, slotID models.ID) ([]models.Creative, error) {
+	return a.storage.Slots().Creatives(ctx, slotID)
 }

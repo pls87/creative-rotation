@@ -44,3 +44,15 @@ func (sr *SlotRepository) Delete(ctx context.Context, id models.ID) error {
 	}
 	return fmt.Errorf("couldn't delete slot id=%d: %w", id, err)
 }
+
+func (sr *SlotRepository) Creatives(ctx context.Context, id models.ID) ([]models.Creative, error) {
+	var creatives []models.Creative
+	query := `SELECT s.* FROM "slot_creative" sc
+		INNER JOIN "creative" cr ON sc.creative_id=cr."ID" 
+		WHERE sc.slot_id = $1`
+	if err := sr.db.SelectContext(ctx, &creatives, query, id); err != nil {
+		return nil, fmt.Errorf("couldn't get creatives for slot '%d' from database: %w", id, err)
+	}
+
+	return creatives, nil
+}

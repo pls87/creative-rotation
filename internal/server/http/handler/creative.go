@@ -1,13 +1,10 @@
 package handler
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
-	"github.com/gorilla/mux"
 	"github.com/pls87/creative-rotation/internal/app"
 	"github.com/pls87/creative-rotation/internal/logger"
 	"github.com/pls87/creative-rotation/internal/storage/models"
@@ -17,6 +14,7 @@ type CreativeService struct {
 	logger      *logger.Logger
 	creativeApp app.CreativeApplication
 	resp        *response
+	helper      *helpers
 }
 
 func (s *CreativeService) All(w http.ResponseWriter, r *http.Request) {
@@ -57,7 +55,7 @@ func (s *CreativeService) New(w http.ResponseWriter, r *http.Request) {
 func (s *CreativeService) Slots(w http.ResponseWriter, r *http.Request) {
 	var id models.ID
 	var ok bool
-	if id, ok = s.handleURLParamID(w, r, "creative_id"); !ok {
+	if id, ok = s.helper.handleURLParamID(w, r, "creative_id"); !ok {
 		return
 	}
 	ctx := r.Context()
@@ -82,19 +80,6 @@ func (s *CreativeService) AllCreativeSlots(w http.ResponseWriter, r *http.Reques
 	s.resp.json(ctx, w, map[string][]models.SlotCreative{"slot_creatives": slotCreatives})
 }
 
-func (s *CreativeService) handleURLParamID(w http.ResponseWriter,
-	r *http.Request, name string) (id models.ID, ok bool) {
-	vars := mux.Vars(r)
-
-	tempID, e := strconv.Atoi(vars[name])
-	if e != nil || tempID <= 0 {
-		s.resp.badRequest(r.Context(), w, fmt.Sprintf("malformed %s", name), e)
-		return 0, false
-	}
-
-	return models.ID(tempID), true
-}
-
 func (s *CreativeService) handleSlotBody(w http.ResponseWriter, r *http.Request) (slotID models.ID, ok bool) {
 	var slot models.Slot
 	err := json.NewDecoder(r.Body).Decode(&slot)
@@ -109,7 +94,7 @@ func (s *CreativeService) handleSlotBody(w http.ResponseWriter, r *http.Request)
 func (s *CreativeService) AddToSlot(w http.ResponseWriter, r *http.Request) {
 	var creativeID, slotID models.ID
 	var ok bool
-	if creativeID, ok = s.handleURLParamID(w, r, "creative_id"); !ok {
+	if creativeID, ok = s.helper.handleURLParamID(w, r, "creative_id"); !ok {
 		return
 	}
 	if slotID, ok = s.handleSlotBody(w, r); !ok {
@@ -130,10 +115,10 @@ func (s *CreativeService) AddToSlot(w http.ResponseWriter, r *http.Request) {
 func (s *CreativeService) RemoveFromSlot(w http.ResponseWriter, r *http.Request) {
 	var creativeID, slotID models.ID
 	var ok bool
-	if creativeID, ok = s.handleURLParamID(w, r, "creative_id"); !ok {
+	if creativeID, ok = s.helper.handleURLParamID(w, r, "creative_id"); !ok {
 		return
 	}
-	if slotID, ok = s.handleURLParamID(w, r, "slot_id"); !ok {
+	if slotID, ok = s.helper.handleURLParamID(w, r, "slot_id"); !ok {
 		return
 	}
 
@@ -187,11 +172,11 @@ func (s *CreativeService) TrackImpression(w http.ResponseWriter, r *http.Request
 
 func (s *CreativeService) Next(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	slotID, ok := s.handleIDQuery(ctx, "slot_id", w, r)
+	slotID, ok := s.helper.handleIDQuery(ctx, "slot_id", w, r)
 	if !ok {
 		return
 	}
-	segmentID, ok := s.handleIDQuery(ctx, "segment_id", w, r)
+	segmentID, ok := s.helper.handleIDQuery(ctx, "segment_id", w, r)
 	if !ok {
 		return
 	}
@@ -203,25 +188,4 @@ func (s *CreativeService) Next(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.resp.json(ctx, w, map[string]models.Creative{"creative": creative})
-}
-
-func (s *CreativeService) handleIDQuery(ctx context.Context, param string, w http.ResponseWriter,
-	r *http.Request) (models.ID, bool) {
-	IDs := r.URL.Query()[param]
-	if len(IDs) == 0 {
-		s.resp.badRequest(ctx, w, fmt.Sprintf("%s isn't specified", param), nil)
-		return 0, false
-	}
-	if len(IDs) != 1 {
-		s.resp.badRequest(ctx, w, fmt.Sprintf("more than one %s were passed", param), nil)
-		return 0, false
-	}
-
-	ID, err := strconv.Atoi(IDs[0])
-	if err != nil || ID <= 0 {
-		s.resp.badRequest(ctx, w, fmt.Sprintf("malformed %s", param), err)
-		return 0, false
-	}
-
-	return models.ID(ID), true
 }

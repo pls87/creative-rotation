@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/pls87/creative-rotation/internal/app"
@@ -13,6 +14,7 @@ type SlotService struct {
 	logger  *logger.Logger
 	slotApp app.SlotApplication
 	resp    *response
+	helper  *helpers
 }
 
 func (s *SlotService) All(w http.ResponseWriter, r *http.Request) {
@@ -48,4 +50,21 @@ func (s *SlotService) New(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.resp.json(ctx, w, map[string]models.Slot{"slot": created})
+}
+
+func (s *SlotService) Creatives(w http.ResponseWriter, r *http.Request) {
+	var id models.ID
+	var ok bool
+	if id, ok = s.helper.handleURLParamID(w, r, "slot_id"); !ok {
+		return
+	}
+	ctx := r.Context()
+	creatives, err := s.slotApp.Creatives(ctx, id)
+	if err != nil {
+		s.resp.internalServerError(ctx, w,
+			fmt.Sprintf("Unexpected error while getting creatives for slot '%d'", id), err)
+		return
+	}
+
+	s.resp.json(ctx, w, map[string][]models.Creative{"creatives": creatives})
 }
