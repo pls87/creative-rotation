@@ -61,7 +61,8 @@ func (sr *StatsRepository) updateStats(ctx context.Context, kind statsKind,
 	}
 
 	if affected, _ := res.RowsAffected(); affected == 0 {
-		return fmt.Errorf("couldn't update stats: %w", basic.ErrCreativeNotInSlot)
+		return fmt.Errorf("couldn't update stats for creative_id=%d, slot_id=%d, segment_id=%d: %w",
+			creativeID, slotID, segmentID, basic.ErrCreativeNotInSlot)
 	}
 
 	return nil

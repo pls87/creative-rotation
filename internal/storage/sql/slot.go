@@ -15,18 +15,17 @@ type SlotRepository struct {
 
 func (sr *SlotRepository) All(ctx context.Context) ([]models.Slot, error) {
 	var slots []models.Slot
-	if err := sr.db.SelectContext(ctx, &slots, `SELECT * FROM "slot"`); err != nil {
-		return nil, fmt.Errorf("couldn't get slots from database: %w", err)
+	if err := sr.db.SelectContext(ctx, &slots, ALLQuery("slot")); err != nil {
+		return nil, ALLError("slot", err)
 	}
 
 	return slots, nil
 }
 
 func (sr *SlotRepository) Create(ctx context.Context, s models.Slot) (added models.Slot, err error) {
-	query := `INSERT INTO "slot" (description) VALUES ($1) RETURNING "ID"`
-	lastInsertID := 0
-	if err = sr.db.QueryRowxContext(ctx, query, s.Desc).Scan(&lastInsertID); err != nil {
-		return s, fmt.Errorf("couldn't create slot in database: %w", err)
+	var lastInsertID int
+	if err = sr.db.QueryRowxContext(ctx, CREATEQuery("slot"), s.Desc).Scan(&lastInsertID); err != nil {
+		return s, CREATEError("slot", err)
 	}
 
 	s.ID = models.ID(lastInsertID)
@@ -34,14 +33,14 @@ func (sr *SlotRepository) Create(ctx context.Context, s models.Slot) (added mode
 }
 
 func (sr *SlotRepository) Delete(ctx context.Context, id models.ID) error {
-	res, err := sr.db.ExecContext(ctx, `DELETE FROM "slot" WHERE "ID"=$1`, id)
+	res, err := sr.db.ExecContext(ctx, DELETEQuery("slot"), id)
 	if err == nil {
 		if affected, _ := res.RowsAffected(); affected == 0 {
-			return fmt.Errorf("couldn't delete slot id=%d: %w", id, basic.ErrDoesNotExist)
+			return DELETEError("slot", id, basic.ErrDoesNotExist)
 		}
 		return nil
 	}
-	return fmt.Errorf("couldn't delete slot id=%d: %w", id, err)
+	return DELETEError("slot", id, err)
 }
 
 func (sr *SlotRepository) Creatives(ctx context.Context, id models.ID) ([]models.Creative, error) {

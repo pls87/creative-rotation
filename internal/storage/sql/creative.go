@@ -15,18 +15,17 @@ type CreativeRepository struct {
 
 func (cr *CreativeRepository) All(ctx context.Context) ([]models.Creative, error) {
 	var creatives []models.Creative
-	if err := cr.db.SelectContext(ctx, &creatives, `SELECT * FROM "creative"`); err != nil {
-		return nil, fmt.Errorf("couldn't get creatives from database: %w", err)
+	if err := cr.db.SelectContext(ctx, &creatives, ALLQuery("creative")); err != nil {
+		return nil, ALLError("creative", err)
 	}
 
 	return creatives, nil
 }
 
 func (cr *CreativeRepository) Create(ctx context.Context, c models.Creative) (added models.Creative, err error) {
-	query := `INSERT INTO "creative" (description) VALUES ($1) RETURNING "ID"`
-	lastInsertID := 0
-	if err = cr.db.QueryRowxContext(ctx, query, c.Desc).Scan(&lastInsertID); err != nil {
-		return c, fmt.Errorf("couldn't create creative in database: %w", err)
+	var lastInsertID int
+	if err = cr.db.QueryRowxContext(ctx, CREATEQuery("creative"), c.Desc).Scan(&lastInsertID); err != nil {
+		return c, CREATEError("creative", err)
 	}
 
 	c.ID = models.ID(lastInsertID)
@@ -59,14 +58,14 @@ func (cr *CreativeRepository) AllCreativeSlots(ctx context.Context) ([]models.Sl
 }
 
 func (cr *CreativeRepository) Delete(ctx context.Context, id models.ID) error {
-	res, err := cr.db.ExecContext(ctx, `DELETE FROM "creative" WHERE "ID"=$1`, id)
+	res, err := cr.db.ExecContext(ctx, DELETEQuery("creative"), id)
 	if err == nil {
 		if affected, _ := res.RowsAffected(); affected == 0 {
-			return fmt.Errorf("couldn't delete creative id=%d: %w", id, basic.ErrDoesNotExist)
+			return DELETEError("creative", id, basic.ErrDoesNotExist)
 		}
 		return nil
 	}
-	return fmt.Errorf("couldn't delete creative id=%d: %w", id, err)
+	return DELETEError("creative", id, err)
 }
 
 func (cr *CreativeRepository) ToSlot(ctx context.Context, creativeID, slotID models.ID) error {
