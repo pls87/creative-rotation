@@ -14,7 +14,7 @@ type CreativeApplication interface {
 	All(ctx context.Context) ([]models.Creative, error)
 	New(ctx context.Context, c models.Creative) (created models.Creative, err error)
 	Slots(ctx context.Context, creativeID models.ID) ([]models.Slot, error)
-	AllCreativeSlots(ctx context.Context) ([]models.SlotCreative, error)
+	AllSlotCreatives(ctx context.Context) ([]models.SlotCreative, error)
 	AddToSlot(ctx context.Context, creativeID, slotID models.ID) error
 	RemoveFromSlot(ctx context.Context, creativeID, slotID models.ID) error
 	TrackConversion(ctx context.Context, conversion models.Conversion) error
@@ -40,7 +40,7 @@ func (a *CreativeApp) Slots(ctx context.Context, creativeID models.ID) ([]models
 	return a.storage.Creatives().Slots(ctx, creativeID)
 }
 
-func (a *CreativeApp) AllCreativeSlots(ctx context.Context) ([]models.SlotCreative, error) {
+func (a *CreativeApp) AllSlotCreatives(ctx context.Context) ([]models.SlotCreative, error) {
 	return a.storage.Creatives().AllCreativeSlots(ctx)
 }
 
@@ -52,7 +52,7 @@ func (a *CreativeApp) RemoveFromSlot(ctx context.Context, creativeID, slotID mod
 	return a.storage.Creatives().FromSlot(ctx, creativeID, slotID)
 }
 
-func (a *CreativeApp) TrackConversion(ctx context.Context, conversion models.Conversion) error {
+func (a *CreativeApp) TrackConversion(_ context.Context, conversion models.Conversion) error {
 	return a.stats.Produce(stats.ConversionKey, stats.Event{
 		CreativeID: conversion.CreativeID,
 		SegmentID:  conversion.SegmentID,
@@ -61,7 +61,7 @@ func (a *CreativeApp) TrackConversion(ctx context.Context, conversion models.Con
 	})
 }
 
-func (a *CreativeApp) TrackImpression(ctx context.Context, impression models.Impression) error {
+func (a *CreativeApp) TrackImpression(_ context.Context, impression models.Impression) error {
 	return a.stats.Produce(stats.ImpressionKey, stats.Event{
 		CreativeID: impression.CreativeID,
 		SegmentID:  impression.SegmentID,

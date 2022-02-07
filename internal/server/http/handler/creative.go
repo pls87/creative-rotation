@@ -71,7 +71,7 @@ func (s *CreativeService) Slots(w http.ResponseWriter, r *http.Request) {
 
 func (s *CreativeService) AllCreativeSlots(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	slotCreatives, err := s.app.AllCreativeSlots(ctx)
+	slotCreatives, err := s.app.AllSlotCreatives(ctx)
 	if err != nil {
 		s.resp.InternalServerError(ctx, w, helpers.UnexpectedErrorGetSlotCreatives, err)
 		return
