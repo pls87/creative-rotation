@@ -28,7 +28,7 @@ func (ch *EntityHelper) New(t *testing.T, kind, desc string) (entity Entity) {
 
 	require.NoErrorf(t, err, "no error expected but was: %s", err)
 	require.Equal(t, http.StatusOK, code)
-	entity, err = ParseOne(kind, resp)
+	entity, err = ParseOne(resp)
 	require.NoErrorf(t, err, "no error expected but was: %s", err)
 
 	return entity

@@ -12,11 +12,10 @@ type Entity struct {
 	Desc string `json:"desc"`
 }
 
-func ParseOne(name string, data []byte) (ent Entity, err error) {
-	m := map[string]Entity{}
-	err = json.Unmarshal(data, &m)
+func ParseOne(data []byte) (ent Entity, err error) {
+	err = json.Unmarshal(data, &ent)
 
-	return m[name], err
+	return ent, err
 }
 
 func ParseMany(name string, data []byte) (elems []Entity, err error) {
