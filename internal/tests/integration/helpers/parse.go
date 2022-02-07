@@ -1,8 +1,10 @@
+//go:build integration
+// +build integration
+
 package helpers
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
 type Entity struct {
@@ -12,7 +14,6 @@ type Entity struct {
 
 func ParseOne(name string, data []byte) (ent Entity, err error) {
 	m := map[string]Entity{}
-	fmt.Println(string(data))
 	err = json.Unmarshal(data, &m)
 
 	return m[name], err
@@ -20,7 +21,6 @@ func ParseOne(name string, data []byte) (ent Entity, err error) {
 
 func ParseMany(name string, data []byte) (elems []Entity, err error) {
 	m := map[string][]Entity{}
-	fmt.Println(string(data))
 	err = json.Unmarshal(data, &m)
 	return m[name], err
 }

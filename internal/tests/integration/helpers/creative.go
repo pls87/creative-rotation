@@ -16,14 +16,6 @@ func NewCreativeHelper(baseURL string) *CreativeHelper {
 	return &CreativeHelper{httpHelper: NewHTTPHelper(baseURL)}
 }
 
-func (ch *CreativeHelper) New(desc string) (code int, body []byte, err error) {
-	return ch.httpHelper.Post("/creative", []byte(fmt.Sprintf(`{"desc": "%s"}`, desc)))
-}
-
-func (ch *CreativeHelper) All() (code int, body []byte, err error) {
-	return ch.httpHelper.Get("/creative", nil)
-}
-
 func (ch *CreativeHelper) AddToSlot(creativeID, slotID int) (code int, body []byte, err error) {
 	url := fmt.Sprintf("/creative/%d/slot", creativeID)
 	slotBody := []byte(fmt.Sprintf(`{"id:"%d"}`, slotID))

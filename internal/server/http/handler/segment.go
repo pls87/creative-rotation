@@ -42,5 +42,5 @@ func (s *SegmentService) New(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.resp.json(ctx, w, map[string]models.Segment{"slot": created})
+	s.resp.json(ctx, w, map[string]models.Segment{"segment": created})
 }
