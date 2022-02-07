@@ -30,7 +30,7 @@ func (eh *Responder) InternalServerError(ctx context.Context, w http.ResponseWri
 	eh.httpError(ctx, w, http.StatusInternalServerError, msg, err)
 }
 
-func (eh *Responder) Json(ctx context.Context, w http.ResponseWriter, v interface{}) {
+func (eh *Responder) JSON(ctx context.Context, w http.ResponseWriter, v interface{}) {
 	data, err := json.Marshal(v)
 	if err != nil {
 		eh.InternalServerError(ctx, w, "failed to encode response body", err)

@@ -36,9 +36,9 @@ func (cr *CreativeRepository) Create(ctx context.Context, c models.Creative) (ad
 
 func (cr *CreativeRepository) Slots(ctx context.Context, id models.ID) ([]models.Slot, error) {
 	var slots []models.Slot
-	query := queries.Location.GetFor(queries.CreativeRelation, queries.SlotRelation)
+	query := queries.SC.GetFor(queries.CreativeRelation, queries.SlotRelation)
 	if err := cr.db.SelectContext(ctx, &slots, query, id); err != nil {
-		return nil, errors.Location.GetFor(queries.CreativeRelation, queries.SlotRelation, id, err)
+		return nil, errors.SC.GetFor(queries.CreativeRelation, queries.SlotRelation, id, err)
 	}
 
 	return slots, nil
@@ -46,7 +46,7 @@ func (cr *CreativeRepository) Slots(ctx context.Context, id models.ID) ([]models
 
 func (cr *CreativeRepository) AllCreativeSlots(ctx context.Context) ([]models.SlotCreative, error) {
 	var slotCreatives []models.SlotCreative
-	if err := cr.db.SelectContext(ctx, &slotCreatives, queries.Location.All()); err != nil {
+	if err := cr.db.SelectContext(ctx, &slotCreatives, queries.SC.All()); err != nil {
 		return nil, errors.Crud.All(queries.LocationRelation, err)
 	}
 
@@ -65,33 +65,33 @@ func (cr *CreativeRepository) Delete(ctx context.Context, id models.ID) error {
 }
 
 func (cr *CreativeRepository) ToSlot(ctx context.Context, creativeID, slotID models.ID) error {
-	res, err := cr.db.ExecContext(ctx, queries.Location.Create(), creativeID, slotID)
+	res, err := cr.db.ExecContext(ctx, queries.SC.Create(), creativeID, slotID)
 	if err != nil {
-		return errors.Location.Create(creativeID, slotID, err)
+		return errors.SC.Create(creativeID, slotID, err)
 	}
 	if affected, _ := res.RowsAffected(); affected == 0 {
-		return errors.Location.Create(creativeID, slotID, basic.ErrCreativeAlreadyInSlot)
+		return errors.SC.Create(creativeID, slotID, basic.ErrCreativeAlreadyInSlot)
 	}
 
 	return nil
 }
 
 func (cr *CreativeRepository) FromSlot(ctx context.Context, creativeID, slotID models.ID) error {
-	res, err := cr.db.ExecContext(ctx, queries.Location.Delete(), creativeID, slotID)
+	res, err := cr.db.ExecContext(ctx, queries.SC.Delete(), creativeID, slotID)
 	if err != nil {
-		return errors.Location.Delete(creativeID, slotID, err)
+		return errors.SC.Delete(creativeID, slotID, err)
 	}
 	if affected, _ := res.RowsAffected(); affected == 0 {
-		return errors.Location.Delete(creativeID, slotID, basic.ErrCreativeNotInSlot)
+		return errors.SC.Delete(creativeID, slotID, basic.ErrCreativeNotInSlot)
 	}
 
 	return nil
 }
 
 func (cr *CreativeRepository) InSlot(ctx context.Context, creativeID, slotID models.ID) (bool, error) {
-	rows, err := cr.db.QueryxContext(ctx, queries.Location.Exists(), creativeID, slotID)
+	rows, err := cr.db.QueryxContext(ctx, queries.SC.Exists(), creativeID, slotID)
 	if err != nil {
-		return false, errors.Location.Exists(creativeID, slotID, err)
+		return false, errors.SC.Exists(creativeID, slotID, err)
 	}
 
 	defer rows.Close()

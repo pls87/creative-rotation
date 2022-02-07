@@ -26,7 +26,7 @@ func (s *SlotService) All(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.resp.Json(ctx, w, map[string][]models.Slot{"slots": slots})
+	s.resp.JSON(ctx, w, map[string][]models.Slot{"slots": slots})
 }
 
 func (s *SlotService) New(w http.ResponseWriter, r *http.Request) {
@@ -50,7 +50,7 @@ func (s *SlotService) New(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.resp.Json(ctx, w, created)
+	s.resp.JSON(ctx, w, created)
 }
 
 func (s *SlotService) Creatives(w http.ResponseWriter, r *http.Request) {
@@ -67,5 +67,5 @@ func (s *SlotService) Creatives(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.resp.Json(ctx, w, map[string][]models.Creative{"creatives": creatives})
+	s.resp.JSON(ctx, w, map[string][]models.Creative{"creatives": creatives})
 }

@@ -25,7 +25,7 @@ func (s *SegmentService) All(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.resp.Json(ctx, w, map[string][]models.Segment{"segments": segments})
+	s.resp.JSON(ctx, w, map[string][]models.Segment{"segments": segments})
 }
 
 func (s *SegmentService) New(w http.ResponseWriter, r *http.Request) {
@@ -49,5 +49,5 @@ func (s *SegmentService) New(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.resp.Json(ctx, w, created)
+	s.resp.JSON(ctx, w, created)
 }

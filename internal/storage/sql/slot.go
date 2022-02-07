@@ -47,9 +47,9 @@ func (sr *SlotRepository) Delete(ctx context.Context, id models.ID) error {
 
 func (sr *SlotRepository) Creatives(ctx context.Context, id models.ID) ([]models.Creative, error) {
 	var creatives []models.Creative
-	query := queries.Location.GetFor(queries.SlotRelation, queries.CreativeRelation)
+	query := queries.SC.GetFor(queries.SlotRelation, queries.CreativeRelation)
 	if err := sr.db.SelectContext(ctx, &creatives, query, id); err != nil {
-		return nil, errors.Location.GetFor(queries.SlotRelation, queries.CreativeRelation, id, err)
+		return nil, errors.SC.GetFor(queries.SlotRelation, queries.CreativeRelation, id, err)
 	}
 
 	return creatives, nil

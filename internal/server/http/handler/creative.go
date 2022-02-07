@@ -26,7 +26,7 @@ func (s *CreativeService) All(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.resp.Json(ctx, w, map[string][]models.Creative{"creatives": creatives})
+	s.resp.JSON(ctx, w, map[string][]models.Creative{"creatives": creatives})
 }
 
 func (s *CreativeService) New(w http.ResponseWriter, r *http.Request) {
@@ -49,7 +49,7 @@ func (s *CreativeService) New(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.resp.Json(ctx, w, created)
+	s.resp.JSON(ctx, w, created)
 }
 
 func (s *CreativeService) Slots(w http.ResponseWriter, r *http.Request) {
@@ -66,7 +66,7 @@ func (s *CreativeService) Slots(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.resp.Json(ctx, w, map[string][]models.Slot{"slots": slots})
+	s.resp.JSON(ctx, w, map[string][]models.Slot{"slots": slots})
 }
 
 func (s *CreativeService) AllCreativeSlots(w http.ResponseWriter, r *http.Request) {
@@ -77,7 +77,7 @@ func (s *CreativeService) AllCreativeSlots(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	s.resp.Json(ctx, w, map[string][]models.SlotCreative{"slot_creatives": slotCreatives})
+	s.resp.JSON(ctx, w, map[string][]models.SlotCreative{"slot_creatives": slotCreatives})
 }
 
 func (s *CreativeService) handleSlotBody(w http.ResponseWriter, r *http.Request) (slotID models.ID, ok bool) {
@@ -109,7 +109,7 @@ func (s *CreativeService) AddToSlot(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res := models.SlotCreative{SlotID: slotID, CreativeID: creativeID}
-	s.resp.Json(ctx, w, res)
+	s.resp.JSON(ctx, w, res)
 }
 
 func (s *CreativeService) RemoveFromSlot(w http.ResponseWriter, r *http.Request) {
@@ -129,7 +129,7 @@ func (s *CreativeService) RemoveFromSlot(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	s.resp.Json(ctx, w, true)
+	s.resp.JSON(ctx, w, true)
 }
 
 func (s *CreativeService) TrackConversion(w http.ResponseWriter, r *http.Request) {
@@ -148,7 +148,7 @@ func (s *CreativeService) TrackConversion(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	s.resp.Json(ctx, w, toCreate)
+	s.resp.JSON(ctx, w, toCreate)
 }
 
 func (s *CreativeService) TrackImpression(w http.ResponseWriter, r *http.Request) {
@@ -167,7 +167,7 @@ func (s *CreativeService) TrackImpression(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	s.resp.Json(ctx, w, toCreate)
+	s.resp.JSON(ctx, w, toCreate)
 }
 
 func (s *CreativeService) Next(w http.ResponseWriter, r *http.Request) {
@@ -187,5 +187,5 @@ func (s *CreativeService) Next(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.resp.Json(ctx, w, creative)
+	s.resp.JSON(ctx, w, creative)
 }
