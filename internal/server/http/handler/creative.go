@@ -49,6 +49,34 @@ func (s *CreativeService) New(w http.ResponseWriter, r *http.Request) {
 	s.resp.json(ctx, w, map[string]models.Creative{"creative": created})
 }
 
+func (s *CreativeService) Slots(w http.ResponseWriter, r *http.Request) {
+	var id models.ID
+	var ok bool
+	if id, ok = s.handleURLParamID(w, r, "creative_id"); !ok {
+		return
+	}
+	ctx := r.Context()
+	slots, err := s.creativeApp.Slots(ctx, id)
+	if err != nil {
+		s.resp.internalServerError(ctx, w,
+			fmt.Sprintf("Unexpected error while getting slots for creative '%d'", id), err)
+		return
+	}
+
+	s.resp.json(ctx, w, map[string][]models.Slot{"slots": slots})
+}
+
+func (s *CreativeService) AllCreativeSlots(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	slotCreatives, err := s.creativeApp.AllCreativeSlots(ctx)
+	if err != nil {
+		s.resp.internalServerError(ctx, w, "Unexpected error while getting creative-slots '%d'", err)
+		return
+	}
+
+	s.resp.json(ctx, w, map[string][]models.SlotCreative{"slot_creatives": slotCreatives})
+}
+
 func (s *CreativeService) handleURLParamID(w http.ResponseWriter,
 	r *http.Request, name string) (id models.ID, ok bool) {
 	vars := mux.Vars(r)

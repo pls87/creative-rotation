@@ -13,6 +13,8 @@ import (
 type CreativeApplication interface {
 	All(ctx context.Context) ([]models.Creative, error)
 	New(ctx context.Context, c models.Creative) (created models.Creative, err error)
+	Slots(ctx context.Context, creativeID models.ID) ([]models.Slot, error)
+	AllCreativeSlots(ctx context.Context) ([]models.SlotCreative, error)
 	AddToSlot(ctx context.Context, creativeID, slotID models.ID) error
 	RemoveFromSlot(ctx context.Context, creativeID, slotID models.ID) error
 	TrackConversion(ctx context.Context, conversion models.Conversion) error
@@ -32,6 +34,14 @@ func (a *CreativeApp) All(ctx context.Context) (collection []models.Creative, er
 
 func (a *CreativeApp) New(ctx context.Context, c models.Creative) (created models.Creative, err error) {
 	return a.storage.Creatives().Create(ctx, c)
+}
+
+func (a *CreativeApp) Slots(ctx context.Context, creativeID models.ID) ([]models.Slot, error) {
+	return a.storage.Creatives().Slots(ctx, creativeID)
+}
+
+func (a *CreativeApp) AllCreativeSlots(ctx context.Context) ([]models.SlotCreative, error) {
+	return a.storage.Creatives().AllCreativeSlots(ctx)
 }
 
 func (a *CreativeApp) AddToSlot(ctx context.Context, creativeID, slotID models.ID) error {

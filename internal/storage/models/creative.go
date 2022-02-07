@@ -8,8 +8,10 @@ type Creative struct {
 }
 
 type SlotCreative struct {
-	SlotID     ID `db:"slot_id" json:"slot_id"`
-	CreativeID ID `db:"creative_id" json:"creative_id"`
+	SlotID       ID     `db:"slot_id" json:"slot_id"`
+	SlotDesc     string `db:"slot_desc" json:"slot_desc"`
+	CreativeID   ID     `db:"creative_id" json:"creative_id"`
+	CreativeDesc string `db:"creative_desc" json:"creative_desc"`
 }
 
 type Impression struct {

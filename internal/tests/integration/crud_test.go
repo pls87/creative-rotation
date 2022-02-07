@@ -4,7 +4,6 @@
 package integration
 
 import (
-	"net/http"
 	"os"
 	"testing"
 
@@ -42,14 +41,14 @@ func (s *CreativeCRUDSuite) TestCreateSegment() {
 	s.testCreateEntity("segment")
 }
 
-func (s *CreativeCRUDSuite) testCreateEntity(t string) {
+func (s *CreativeCRUDSuite) testCreateEntity(kind string) {
 	desc := gofakeit.BuzzWord()
-	entity := s.new(t, desc)
+	entity := s.entities.New(s.T(), kind, desc)
 
 	s.Greaterf(entity.ID, 0, "ID of created entity should be more than 0")
 	s.Equal(desc, entity.Desc)
 
-	entities := s.all(t)
+	entities := s.entities.All(s.T(), kind)
 	found := false
 	for _, e := range entities {
 		if e.ID == entity.ID && e.Desc == entity.Desc {
@@ -59,26 +58,6 @@ func (s *CreativeCRUDSuite) testCreateEntity(t string) {
 	}
 
 	s.Truef(found, "created entity %v couldn't be found in storage", entity)
-}
-
-func (s *CreativeCRUDSuite) new(t, desc string) (entity helpers.Entity) {
-	code, resp, err := s.entities.New(t, desc)
-	s.NoErrorf(err, "no error expected but was: %s", err)
-	s.Equal(http.StatusOK, code)
-	entity, err = helpers.ParseOne(t, resp)
-	s.NoErrorf(err, "no error expected but was: %s", err)
-
-	return entity
-}
-
-func (s *CreativeCRUDSuite) all(t string) (entities []helpers.Entity) {
-	code, resp, err := s.entities.All(t)
-	s.NoErrorf(err, "no error expected but was: %s", err)
-	s.Equal(http.StatusOK, code)
-	entities, err = helpers.ParseMany(t+"s", resp)
-	s.NoErrorf(err, "no error expected but was: %s", err)
-
-	return entities
 }
 
 func TestCreativeCRUD(t *testing.T) {

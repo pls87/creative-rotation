@@ -33,6 +33,32 @@ func (cr *CreativeRepository) Create(ctx context.Context, c models.Creative) (ad
 	return c, nil
 }
 
+func (cr *CreativeRepository) Slots(ctx context.Context, id models.ID) ([]models.Slot, error) {
+	var slots []models.Slot
+	query := `SELECT s.* FROM "slot_creative" sc
+		INNER JOIN "slot" s ON sc.slot_id=s."ID"
+		INNER JOIN "creative" cr ON sc.creative_id=cr."ID" 
+		WHERE sc.creative_id = $1`
+	if err := cr.db.SelectContext(ctx, &slots, query, id); err != nil {
+		return nil, fmt.Errorf("couldn't get slots for creative '%d' from database: %w", id, err)
+	}
+
+	return slots, nil
+}
+
+func (cr *CreativeRepository) AllCreativeSlots(ctx context.Context) ([]models.SlotCreative, error) {
+	var slotCreatives []models.SlotCreative
+	query := `SELECT sc.slot_id, sc.creative_id, s.description as slot_desc, cr.description as creative_desc 
+		FROM "slot_creative" sc 
+		INNER JOIN "slot" s ON sc.slot_id=s."ID"
+		INNER JOIN "creative" cr ON sc.creative_id=cr."ID"`
+	if err := cr.db.SelectContext(ctx, &slotCreatives, query); err != nil {
+		return nil, fmt.Errorf("couldn't get slots-creative from database: %w", err)
+	}
+
+	return slotCreatives, nil
+}
+
 func (cr *CreativeRepository) Delete(ctx context.Context, id models.ID) error {
 	res, err := cr.db.ExecContext(ctx, `DELETE FROM "creative" WHERE "ID"=$1`, id)
 	if err == nil {

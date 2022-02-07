@@ -35,6 +35,8 @@ func (s *Server) Start(ctx context.Context) error {
 	mux.HandleFunc("/noop", s.service.Noop).Methods("GET")
 	mux.HandleFunc("/creative", s.service.Creatives().All).Methods("GET")
 	mux.HandleFunc("/creative", s.service.Creatives().New).Methods("POST")
+	mux.HandleFunc("/creative/slot", s.service.Creatives().AllCreativeSlots).Methods("GET")
+	mux.HandleFunc("/creative/{creative_id:[0-9]+}/slot", s.service.Creatives().Slots).Methods("GET")
 	mux.HandleFunc("/creative/{creative_id:[0-9]+}/slot", s.service.Creatives().AddToSlot).
 		Methods("POST")
 	mux.HandleFunc("/creative/{creative_id:[0-9]+}/slot/{slot_id:[0-9]+}", s.service.Creatives().RemoveFromSlot).
