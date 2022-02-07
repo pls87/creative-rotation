@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/pls87/creative-rotation/internal/app"
@@ -22,11 +21,11 @@ func (s *SlotService) All(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	slots, err := s.app.All(ctx)
 	if err != nil {
-		s.resp.InternalServerError(ctx, w, "Unexpected error while getting slots from storage", err)
+		s.resp.InternalServerError(ctx, w, helpers.UnexpectedErrorGetSlots, err)
 		return
 	}
 
-	s.resp.JSON(ctx, w, map[string][]models.Slot{"slots": slots})
+	s.resp.JSON(ctx, w, helpers.SlotCollection{Slots: slots})
 }
 
 func (s *SlotService) New(w http.ResponseWriter, r *http.Request) {
@@ -35,18 +34,18 @@ func (s *SlotService) New(w http.ResponseWriter, r *http.Request) {
 	var toCreate models.Slot
 	err := json.NewDecoder(r.Body).Decode(&toCreate)
 	if err != nil {
-		s.resp.BadRequest(ctx, w, "failed to parse slot body", err)
+		s.resp.BadRequest(ctx, w, helpers.BadRequestFailedParseSlot, err)
 		return
 	}
 
 	if toCreate.Desc == "" {
-		s.resp.BadRequest(ctx, w, "slot description can't be empty", err)
+		s.resp.BadRequest(ctx, w, helpers.BadRequestFailedEmptyDescSlot, err)
 		return
 	}
 
 	created, err := s.app.New(ctx, toCreate)
 	if err != nil {
-		s.resp.InternalServerError(ctx, w, "Unexpected error while saving slot to storage", err)
+		s.resp.InternalServerError(ctx, w, helpers.UnexpectedErrorSavingSlot, err)
 		return
 	}
 
@@ -62,10 +61,9 @@ func (s *SlotService) Creatives(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	creatives, err := s.app.Creatives(ctx, id)
 	if err != nil {
-		s.resp.InternalServerError(ctx, w,
-			fmt.Sprintf("Unexpected error while getting creatives for slot '%d'", id), err)
+		s.resp.InternalServerError(ctx, w, helpers.UnexpectedErrorGetCreatives, err)
 		return
 	}
 
-	s.resp.JSON(ctx, w, map[string][]models.Creative{"creatives": creatives})
+	s.resp.JSON(ctx, w, helpers.CreativeCollection{Creatives: creatives})
 }

@@ -26,6 +26,14 @@ func (eh *Responder) BadRequest(ctx context.Context, w http.ResponseWriter, msg 
 	eh.httpError(ctx, w, http.StatusBadRequest, msg, err)
 }
 
+func (eh *Responder) Conflict(ctx context.Context, w http.ResponseWriter, msg string, err error) {
+	eh.httpError(ctx, w, http.StatusConflict, msg, err)
+}
+
+func (eh *Responder) NotFound(ctx context.Context, w http.ResponseWriter, msg string, err error) {
+	eh.httpError(ctx, w, http.StatusNotFound, msg, err)
+}
+
 func (eh *Responder) InternalServerError(ctx context.Context, w http.ResponseWriter, msg string, err error) {
 	eh.httpError(ctx, w, http.StatusInternalServerError, msg, err)
 }

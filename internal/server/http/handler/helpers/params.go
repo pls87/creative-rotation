@@ -26,7 +26,7 @@ func (h *ParamHelper) HandleIDQuery(ctx context.Context, param string, w http.Re
 		return 0, false
 	}
 	if len(IDs) != 1 {
-		h.resp.BadRequest(ctx, w, fmt.Sprintf("more than one %s were passed", param), nil)
+		h.resp.BadRequest(ctx, w, fmt.Sprintf("more than one %s was passed", param), nil)
 		return 0, false
 	}
 
@@ -39,14 +39,14 @@ func (h *ParamHelper) HandleIDQuery(ctx context.Context, param string, w http.Re
 	return models.ID(ID), true
 }
 
-func (h *ParamHelper) HandleURLParamID(w http.ResponseWriter, r *http.Request, name string) (id models.ID, ok bool) {
+func (h *ParamHelper) HandleURLParamID(w http.ResponseWriter, r *http.Request, name string) (models.ID, bool) {
 	vars := mux.Vars(r)
 
-	tempID, e := strconv.Atoi(vars[name])
-	if e != nil || tempID <= 0 {
+	id, e := strconv.Atoi(vars[name])
+	if e != nil || id <= 0 {
 		h.resp.BadRequest(r.Context(), w, fmt.Sprintf("malformed %s", name), e)
 		return 0, false
 	}
 
-	return models.ID(tempID), true
+	return models.ID(id), true
 }

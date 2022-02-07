@@ -21,11 +21,11 @@ func (s *SegmentService) All(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	segments, err := s.app.All(ctx)
 	if err != nil {
-		s.resp.InternalServerError(ctx, w, "Unexpected error while getting segments from storage", err)
+		s.resp.InternalServerError(ctx, w, helpers.UnexpectedErrorGetSegments, err)
 		return
 	}
 
-	s.resp.JSON(ctx, w, map[string][]models.Segment{"segments": segments})
+	s.resp.JSON(ctx, w, helpers.SegmentCollection{Segments: segments})
 }
 
 func (s *SegmentService) New(w http.ResponseWriter, r *http.Request) {
@@ -34,18 +34,18 @@ func (s *SegmentService) New(w http.ResponseWriter, r *http.Request) {
 	var toCreate models.Segment
 	err := json.NewDecoder(r.Body).Decode(&toCreate)
 	if err != nil {
-		s.resp.BadRequest(ctx, w, "failed to parse segment body", err)
+		s.resp.BadRequest(ctx, w, helpers.BadRequestFailedParseSegment, err)
 		return
 	}
 
 	if toCreate.Desc == "" {
-		s.resp.BadRequest(ctx, w, "segment description can't be empty", err)
+		s.resp.BadRequest(ctx, w, helpers.BadRequestFailedEmptyDescSegment, err)
 		return
 	}
 
 	created, err := s.app.New(ctx, toCreate)
 	if err != nil {
-		s.resp.InternalServerError(ctx, w, "Unexpected error while saving segment to storage", err)
+		s.resp.InternalServerError(ctx, w, helpers.UnexpectedErrorSavingSegment, err)
 		return
 	}
 

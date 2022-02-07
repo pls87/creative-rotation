@@ -2,12 +2,13 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"net/http"
 
 	"github.com/pls87/creative-rotation/internal/app"
 	"github.com/pls87/creative-rotation/internal/logger"
 	"github.com/pls87/creative-rotation/internal/server/http/handler/helpers"
+	"github.com/pls87/creative-rotation/internal/storage/basic"
 	"github.com/pls87/creative-rotation/internal/storage/models"
 )
 
@@ -22,11 +23,11 @@ func (s *CreativeService) All(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	creatives, err := s.app.All(ctx)
 	if err != nil {
-		s.resp.InternalServerError(ctx, w, "Unexpected error while getting creatives from storage", err)
+		s.resp.InternalServerError(ctx, w, helpers.UnexpectedErrorGetCreatives, err)
 		return
 	}
 
-	s.resp.JSON(ctx, w, map[string][]models.Creative{"creatives": creatives})
+	s.resp.JSON(ctx, w, helpers.CreativeCollection{Creatives: creatives})
 }
 
 func (s *CreativeService) New(w http.ResponseWriter, r *http.Request) {
@@ -34,18 +35,18 @@ func (s *CreativeService) New(w http.ResponseWriter, r *http.Request) {
 	var toCreate models.Creative
 	err := json.NewDecoder(r.Body).Decode(&toCreate)
 	if err != nil {
-		s.resp.BadRequest(ctx, w, "failed to parse creative body", err)
+		s.resp.BadRequest(ctx, w, helpers.BadRequestFailedParseCreative, err)
 		return
 	}
 
 	if toCreate.Desc == "" {
-		s.resp.BadRequest(ctx, w, "creative description can't be empty", err)
+		s.resp.BadRequest(ctx, w, helpers.BadRequestFailedEmptyDescCreative, err)
 		return
 	}
 
 	created, err := s.app.New(ctx, toCreate)
 	if err != nil {
-		s.resp.InternalServerError(ctx, w, "Unexpected error while saving creative to storage", err)
+		s.resp.InternalServerError(ctx, w, helpers.UnexpectedErrorSavingCreative, err)
 		return
 	}
 
@@ -61,30 +62,29 @@ func (s *CreativeService) Slots(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	slots, err := s.app.Slots(ctx, id)
 	if err != nil {
-		s.resp.InternalServerError(ctx, w,
-			fmt.Sprintf("Unexpected error while getting slots for creative '%d'", id), err)
+		s.resp.InternalServerError(ctx, w, helpers.UnexpectedErrorGetSlots, err)
 		return
 	}
 
-	s.resp.JSON(ctx, w, map[string][]models.Slot{"slots": slots})
+	s.resp.JSON(ctx, w, helpers.SlotCollection{Slots: slots})
 }
 
 func (s *CreativeService) AllCreativeSlots(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	slotCreatives, err := s.app.AllCreativeSlots(ctx)
 	if err != nil {
-		s.resp.InternalServerError(ctx, w, "Unexpected error while getting creative-slots '%d'", err)
+		s.resp.InternalServerError(ctx, w, helpers.UnexpectedErrorGetSlotCreatives, err)
 		return
 	}
 
-	s.resp.JSON(ctx, w, map[string][]models.SlotCreative{"slot_creatives": slotCreatives})
+	s.resp.JSON(ctx, w, helpers.SCCollection{SC: slotCreatives})
 }
 
 func (s *CreativeService) handleSlotBody(w http.ResponseWriter, r *http.Request) (slotID models.ID, ok bool) {
 	var slot models.Slot
 	err := json.NewDecoder(r.Body).Decode(&slot)
 	if err != nil || slot.ID <= 0 {
-		s.resp.BadRequest(r.Context(), w, "failed to parse slot", err)
+		s.resp.BadRequest(r.Context(), w, helpers.BadRequestFailedParseSlot, err)
 		return 0, false
 	}
 
@@ -103,13 +103,15 @@ func (s *CreativeService) AddToSlot(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	err := s.app.AddToSlot(ctx, creativeID, slotID)
-	if err != nil {
-		s.resp.InternalServerError(ctx, w, "Unexpected error while adding creative to slot", err)
-		return
-	}
 
-	res := models.SlotCreative{SlotID: slotID, CreativeID: creativeID}
-	s.resp.JSON(ctx, w, res)
+	switch {
+	case err == nil:
+		s.resp.JSON(ctx, w, models.SlotCreative{SlotID: slotID, CreativeID: creativeID})
+	case errors.Is(err, basic.ErrCreativeAlreadyInSlot):
+		s.resp.Conflict(ctx, w, helpers.ConflictCreativeAlreadyInSlot, err)
+	default:
+		s.resp.InternalServerError(ctx, w, helpers.UnexpectedErrorSavingSlotCreative, err)
+	}
 }
 
 func (s *CreativeService) RemoveFromSlot(w http.ResponseWriter, r *http.Request) {
@@ -124,12 +126,14 @@ func (s *CreativeService) RemoveFromSlot(w http.ResponseWriter, r *http.Request)
 
 	ctx := r.Context()
 	err := s.app.RemoveFromSlot(ctx, creativeID, slotID)
-	if err != nil {
-		s.resp.InternalServerError(ctx, w, "Unexpected error while removing creative from slot", err)
-		return
+	switch {
+	case err == nil:
+		s.resp.JSON(ctx, w, true)
+	case errors.Is(err, basic.ErrCreativeNotInSlot):
+		s.resp.NotFound(ctx, w, helpers.NotFoundCreativeNotInSlot, err)
+	default:
+		s.resp.InternalServerError(ctx, w, helpers.UnexpectedErrorDeleteCreativeFromSlot, err)
 	}
-
-	s.resp.JSON(ctx, w, true)
 }
 
 func (s *CreativeService) TrackConversion(w http.ResponseWriter, r *http.Request) {
@@ -138,13 +142,13 @@ func (s *CreativeService) TrackConversion(w http.ResponseWriter, r *http.Request
 	var toCreate models.Conversion
 	err := json.NewDecoder(r.Body).Decode(&toCreate)
 	if err != nil {
-		s.resp.BadRequest(ctx, w, "failed to parse conversion body", err)
+		s.resp.BadRequest(ctx, w, helpers.BadRequestFailedParseConversion, err)
 		return
 	}
 
 	err = s.app.TrackConversion(ctx, toCreate)
 	if err != nil {
-		s.resp.InternalServerError(ctx, w, "Unexpected error while saving conversion to storage", err)
+		s.resp.InternalServerError(ctx, w, helpers.UnexpectedErrorSavingConversion, err)
 		return
 	}
 
@@ -157,13 +161,13 @@ func (s *CreativeService) TrackImpression(w http.ResponseWriter, r *http.Request
 	var toCreate models.Impression
 	err := json.NewDecoder(r.Body).Decode(&toCreate)
 	if err != nil {
-		s.resp.BadRequest(ctx, w, "failed to parse impression body", err)
+		s.resp.BadRequest(ctx, w, helpers.BadRequestFailedParseImpression, err)
 		return
 	}
 
 	err = s.app.TrackImpression(ctx, toCreate)
 	if err != nil {
-		s.resp.InternalServerError(ctx, w, "Unexpected error while saving impression to storage", err)
+		s.resp.InternalServerError(ctx, w, helpers.UnexpectedErrorSavingImpression, err)
 		return
 	}
 
@@ -183,7 +187,7 @@ func (s *CreativeService) Next(w http.ResponseWriter, r *http.Request) {
 
 	creative, err := s.app.Next(ctx, slotID, segmentID)
 	if err != nil || creative.ID <= 0 {
-		s.resp.InternalServerError(ctx, w, "Unexpected error while getting next creative", err)
+		s.resp.InternalServerError(ctx, w, helpers.UnexpectedErrorGetNextCreative, err)
 		return
 	}
 
