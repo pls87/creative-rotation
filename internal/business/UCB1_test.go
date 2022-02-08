@@ -9,6 +9,7 @@ import (
 
 type step struct {
 	action      string
+	times       int
 	creative    models.ID
 	from        []models.ID
 	zero, total int
@@ -27,14 +28,23 @@ var steps = []step{
 	{action: "imp", creative: 1, zero: 3, total: 2},
 	{action: "imp", creative: 2, zero: 2, total: 3},
 	{action: "conv", creative: 5, zero: 2, total: 3},
-	{action: "next", from: []models.ID{3, 9}, zero: 2, total: 3},
-	{action: "next", from: []models.ID{3, 9}, zero: 2, total: 3},
-	{action: "next", from: []models.ID{3, 9}, zero: 2, total: 3},
+	{action: "next", from: []models.ID{3, 9}, zero: 2, total: 3, times: 3},
 	{action: "imp", creative: 9, zero: 1, total: 4},
-	{action: "next", from: []models.ID{3}, zero: 1, total: 4},
-	{action: "next", from: []models.ID{3}, zero: 1, total: 4},
+	{action: "next", from: []models.ID{3}, zero: 1, total: 4, times: 2},
 	{action: "conv", creative: 9, zero: 1, total: 4},
 	{action: "imp", creative: 3, zero: 0, total: 5},
+	{action: "next", from: []models.ID{5, 9}, zero: 0, total: 5, times: 3},
+	{action: "imp", creative: 3, zero: 0, total: 6},
+	{action: "next", from: []models.ID{5, 9}, zero: 0, total: 6, times: 3},
+	{action: "imp", creative: 1, zero: 0, total: 7},
+	{action: "next", from: []models.ID{5, 9}, zero: 0, total: 7, times: 3},
+	{action: "conv", creative: 1, zero: 0, total: 7},
+	{action: "next", from: []models.ID{1, 5, 9}, zero: 0, total: 7, times: 5},
+	{action: "conv", creative: 5, zero: 0, total: 7},
+	{action: "next", from: []models.ID{5}, zero: 0, total: 7},
+	{action: "imp", creative: 5, zero: 0, total: 8},
+	{action: "imp", creative: 5, zero: 0, total: 9},
+	{action: "next", from: []models.ID{1, 9}, zero: 0, total: 9, times: 5},
 }
 
 func imp(creative models.ID, stats []models.Stats) []models.Stats {
@@ -70,18 +80,24 @@ func TestUSB1Playback(t *testing.T) {
 	stats := stats
 	t.Helper()
 	for _, s := range steps {
-		switch s.action {
-		case "imp":
-			stats = imp(s.creative, stats)
-		case "conv":
-			stats = conv(s.creative, stats)
-		case "next":
-			c := NextCreative(stats)
-			require.Truef(t, find(s.from, c), "%d wasn't found in %v", c, s.from)
+		times := 1
+		if s.times > 0 {
+			times = s.times
 		}
-		zero, total := aggregate(stats)
-		require.Equal(t, s.zero, len(zero))
-		require.Equal(t, uint64(s.total), total)
+		for i := 0; i < times; i++ {
+			switch s.action {
+			case "imp":
+				stats = imp(s.creative, stats)
+			case "conv":
+				stats = conv(s.creative, stats)
+			case "next":
+				c := NextCreative(stats)
+				require.Truef(t, find(s.from, c), "%d wasn't found in %v", c, s.from)
+			}
+			zero, total := aggregate(stats)
+			require.Equal(t, s.zero, len(zero))
+			require.Equal(t, uint64(s.total), total)
+		}
 	}
 }
 
