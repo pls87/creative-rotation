@@ -14,31 +14,52 @@ const (
 	retryGap = 5 * time.Second
 )
 
-var (
-	cfg     config.Config
-	cfgFile string
-	logg    *logger.Logger
+var rc *RootCMD
 
-	rootCmd = &cobra.Command{
+type RootCMD struct {
+	*cobra.Command
+	cfgFile string        // nolint: structcheck
+	cfg     config.Config // nolint: structcheck
+	logg    *logger.Logger
+}
+
+func (rc *RootCMD) Run() {
+	fmt.Println("Noop. Exiting...")
+}
+
+func (rc *RootCMD) Retry(toRetry func() error, onError func()) {
+	var err error
+	for r := retries; r > 0; r-- {
+		if err = toRetry(); err == nil {
+			break
+		}
+		rc.logg.Errorf("failed to connect: %s", err)
+		rc.logg.Info("retrying...")
+		time.Sleep(retryGap)
+	}
+
+	if err != nil {
+		rc.logg.Errorf("number of retries exceeded: %s", err)
+		onError()
+	}
+}
+
+func NewRootCommand() *RootCMD {
+	cmd := new(RootCMD)
+	cmd.Command = &cobra.Command{
 		Use:   "cr",
 		Short: "Creative rotation app",
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("Noop. Exiting....")
+		Run: func(c *cobra.Command, args []string) {
+			cmd.Run()
 		},
 	}
-)
+	return cmd
+}
 
-// Execute executes the root command.
 func Execute() error {
-	return rootCmd.Execute()
+	return rc.Execute()
 }
 
 func init() {
-	cobra.OnInitialize(beforeRun)
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file")
-}
-
-func beforeRun() {
-	cfg = config.New(cfgFile)
-	logg = logger.New(cfg.Log)
+	rc = NewRootCommand()
 }
