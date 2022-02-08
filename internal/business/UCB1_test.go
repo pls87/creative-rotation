@@ -28,22 +28,30 @@ var steps = []step{
 	{action: "imp", creative: 1, zero: 3, total: 2},
 	{action: "imp", creative: 2, zero: 2, total: 3},
 	{action: "conv", creative: 5, zero: 2, total: 3},
+	// choose creative of 3 and 9 because they have zero stats
 	{action: "next", from: []models.ID{3, 9}, zero: 2, total: 3, times: 3},
 	{action: "imp", creative: 9, zero: 1, total: 4},
+	// choose creative 9 because it has zero stats
 	{action: "next", from: []models.ID{3}, zero: 1, total: 4, times: 2},
 	{action: "conv", creative: 9, zero: 1, total: 4},
 	{action: "imp", creative: 3, zero: 0, total: 5},
+	// choose creative of 5 and 9 because they have same stats
 	{action: "next", from: []models.ID{5, 9}, zero: 0, total: 5, times: 3},
 	{action: "imp", creative: 3, zero: 0, total: 6},
+	// choose creative of 5 and 9 because they have same stats
 	{action: "next", from: []models.ID{5, 9}, zero: 0, total: 6, times: 3},
 	{action: "imp", creative: 1, zero: 0, total: 7},
+	// choose creative of 5 and 9 because they have same stats
 	{action: "next", from: []models.ID{5, 9}, zero: 0, total: 7, times: 3},
 	{action: "conv", creative: 1, zero: 0, total: 7},
+	// choose creative of 1, 5 and 9 because they have same stats
 	{action: "next", from: []models.ID{1, 5, 9}, zero: 0, total: 7, times: 5},
 	{action: "conv", creative: 5, zero: 0, total: 7},
+	// choose creative 5 because it has the best stats
 	{action: "next", from: []models.ID{5}, zero: 0, total: 7},
 	{action: "imp", creative: 5, zero: 0, total: 8},
 	{action: "imp", creative: 5, zero: 0, total: 9},
+	// choose creative of 1, 9 because they have same stats after creative 5 missed 2 impressions
 	{action: "next", from: []models.ID{1, 9}, zero: 0, total: 9, times: 5},
 }
 
