@@ -3,7 +3,6 @@ package sql
 import (
 	"context"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/pls87/creative-rotation/internal/storage/basic"
 	"github.com/pls87/creative-rotation/internal/storage/models"
 	"github.com/pls87/creative-rotation/internal/storage/sql/errors"
@@ -11,7 +10,7 @@ import (
 )
 
 type CreativeRepository struct {
-	db *sqlx.DB
+	db DB
 }
 
 func (cr *CreativeRepository) All(ctx context.Context) ([]models.Creative, error) {
@@ -23,14 +22,13 @@ func (cr *CreativeRepository) All(ctx context.Context) ([]models.Creative, error
 	return creatives, nil
 }
 
-func (cr *CreativeRepository) Create(ctx context.Context, c models.Creative) (added models.Creative, err error) {
-	var lastInsertID int
-	if err = cr.db.QueryRowxContext(ctx, queries.Crud.Create(queries.CreativeRelation), c.Desc).
-		Scan(&lastInsertID); err != nil {
+func (cr *CreativeRepository) Create(ctx context.Context, c models.Creative) (models.Creative, error) {
+	id, err := cr.db.InsertRow(ctx, queries.Crud.Create(queries.CreativeRelation), c.Desc)
+	if err != nil {
 		return c, errors.Crud.Create(queries.CreativeRelation, err)
 	}
 
-	c.ID = models.ID(lastInsertID)
+	c.ID = id
 	return c, nil
 }
 
@@ -44,10 +42,10 @@ func (cr *CreativeRepository) Slots(ctx context.Context, id models.ID) ([]models
 	return slots, nil
 }
 
-func (cr *CreativeRepository) AllCreativeSlots(ctx context.Context) ([]models.SlotCreative, error) {
+func (cr *CreativeRepository) AllSlotCreatives(ctx context.Context) ([]models.SlotCreative, error) {
 	var slotCreatives []models.SlotCreative
 	if err := cr.db.SelectContext(ctx, &slotCreatives, queries.SC.All()); err != nil {
-		return nil, errors.Crud.All(queries.LocationRelation, err)
+		return nil, errors.Crud.All(queries.SlotCreativeRelation, err)
 	}
 
 	return slotCreatives, nil
@@ -89,9 +87,13 @@ func (cr *CreativeRepository) FromSlot(ctx context.Context, creativeID, slotID m
 }
 
 func (cr *CreativeRepository) InSlot(ctx context.Context, creativeID, slotID models.ID) (bool, error) {
-	rows, err := cr.db.QueryxContext(ctx, queries.SC.Exists(), creativeID, slotID)
+	rows, err := cr.db.QueryContext(ctx, queries.SC.Exists(), creativeID, slotID)
 	if err != nil {
 		return false, errors.SC.Exists(creativeID, slotID, err)
+	}
+
+	if rows.Err() != nil {
+		return false, errors.SC.Exists(creativeID, slotID, rows.Err())
 	}
 
 	defer rows.Close()

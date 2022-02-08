@@ -39,7 +39,7 @@ type CreativeRepository interface {
 	All(ctx context.Context) ([]models.Creative, error)
 	Create(ctx context.Context, c models.Creative) (added models.Creative, err error)
 	Slots(ctx context.Context, id models.ID) ([]models.Slot, error)
-	AllCreativeSlots(ctx context.Context) ([]models.SlotCreative, error)
+	AllSlotCreatives(ctx context.Context) ([]models.SlotCreative, error)
 	Delete(ctx context.Context, id models.ID) error
 	ToSlot(ctx context.Context, creativeID, slotID models.ID) error
 	FromSlot(ctx context.Context, creativeID, slotID models.ID) error

@@ -2,6 +2,7 @@ package sql
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/jmoiron/sqlx"
 
@@ -9,24 +10,59 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/pls87/creative-rotation/internal/config"
 	"github.com/pls87/creative-rotation/internal/storage/basic"
+	"github.com/pls87/creative-rotation/internal/storage/models"
 )
+
+type DB interface {
+	Open(ctx context.Context, cfg config.DBConf) error
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+	SelectContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
+	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
+	InsertRow(ctx context.Context, query string, args ...interface{}) (models.ID, error)
+	Close() error
+}
+
+type Database struct {
+	*sqlx.DB
+}
+
+func (db *Database) Open(ctx context.Context, cfg config.DBConf) error {
+	d, err := sqlx.ConnectContext(ctx, "postgres", cfg.ConnString())
+	if err == nil {
+		db.DB = d
+	}
+
+	return err
+}
+
+func (db *Database) InsertRow(ctx context.Context, query string, args ...interface{}) (models.ID, error) {
+	var lastInsertID int
+	err := db.QueryRowContext(ctx, query, args...).Scan(&lastInsertID)
+
+	return models.ID(lastInsertID), err
+}
 
 type Storage struct {
 	cfg       config.DBConf
-	db        *sqlx.DB
+	db        DB
 	segments  *SegmentRepository
 	slots     *SlotRepository
 	creatives *CreativeRepository
 	stats     *StatsRepository
 }
 
-func New(cfg config.DBConf) *Storage {
+func New(cfg config.DBConf, db DB) *Storage {
+	if db == nil {
+		db = &Database{}
+	}
+
 	return &Storage{
-		segments:  &SegmentRepository{},
-		slots:     &SlotRepository{},
-		creatives: &CreativeRepository{},
-		stats:     &StatsRepository{},
+		segments:  &SegmentRepository{db},
+		slots:     &SlotRepository{db},
+		creatives: &CreativeRepository{db},
+		stats:     &StatsRepository{db},
 		cfg:       cfg,
+		db:        db,
 	}
 }
 
@@ -47,15 +83,7 @@ func (s *Storage) Creatives() basic.CreativeRepository {
 }
 
 func (s *Storage) Init(ctx context.Context) error {
-	db, err := sqlx.ConnectContext(ctx, "postgres", s.cfg.ConnString())
-	if err == nil {
-		s.db = db
-		s.segments.db = s.db
-		s.creatives.db = s.db
-		s.slots.db = s.db
-		s.stats.db = s.db
-	}
-	return err
+	return s.db.Open(ctx, s.cfg)
 }
 
 func (s *Storage) Dispose() error {

@@ -7,5 +7,5 @@ import (
 )
 
 func New(cfg config.DBConf) basic.Storage {
-	return sql.New(cfg)
+	return sql.New(cfg, nil)
 }

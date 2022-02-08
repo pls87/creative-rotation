@@ -3,7 +3,6 @@ package sql
 import (
 	"context"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/pls87/creative-rotation/internal/storage/basic"
 	"github.com/pls87/creative-rotation/internal/storage/models"
 	"github.com/pls87/creative-rotation/internal/storage/sql/errors"
@@ -11,7 +10,7 @@ import (
 )
 
 type StatsRepository struct {
-	db *sqlx.DB
+	db DB
 }
 
 func (sr *StatsRepository) StatsSlotSegment(ctx context.Context, slotID, segmentID models.ID) ([]models.Stats, error) {

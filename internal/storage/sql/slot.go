@@ -3,7 +3,6 @@ package sql
 import (
 	"context"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/pls87/creative-rotation/internal/storage/basic"
 	"github.com/pls87/creative-rotation/internal/storage/models"
 	"github.com/pls87/creative-rotation/internal/storage/sql/errors"
@@ -11,7 +10,7 @@ import (
 )
 
 type SlotRepository struct {
-	db *sqlx.DB
+	db DB
 }
 
 func (sr *SlotRepository) All(ctx context.Context) ([]models.Slot, error) {
@@ -23,14 +22,13 @@ func (sr *SlotRepository) All(ctx context.Context) ([]models.Slot, error) {
 	return slots, nil
 }
 
-func (sr *SlotRepository) Create(ctx context.Context, s models.Slot) (added models.Slot, err error) {
-	var lastInsertID int
-	if err = sr.db.QueryRowxContext(ctx, queries.Crud.Create(queries.SlotRelation), s.Desc).
-		Scan(&lastInsertID); err != nil {
+func (sr *SlotRepository) Create(ctx context.Context, s models.Slot) (models.Slot, error) {
+	id, err := sr.db.InsertRow(ctx, queries.Crud.Create(queries.SlotRelation), s.Desc)
+	if err != nil {
 		return s, errors.Crud.Create(queries.SlotRelation, err)
 	}
 
-	s.ID = models.ID(lastInsertID)
+	s.ID = id
 	return s, nil
 }
 

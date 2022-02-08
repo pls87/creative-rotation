@@ -3,7 +3,6 @@ package sql
 import (
 	"context"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/pls87/creative-rotation/internal/storage/basic"
 	"github.com/pls87/creative-rotation/internal/storage/models"
 	"github.com/pls87/creative-rotation/internal/storage/sql/errors"
@@ -11,7 +10,7 @@ import (
 )
 
 type SegmentRepository struct {
-	db *sqlx.DB
+	db DB
 }
 
 func (sr *SegmentRepository) All(ctx context.Context) ([]models.Segment, error) {
@@ -23,14 +22,13 @@ func (sr *SegmentRepository) All(ctx context.Context) ([]models.Segment, error) 
 	return segments, nil
 }
 
-func (sr *SegmentRepository) Create(ctx context.Context, s models.Segment) (added models.Segment, err error) {
-	var lastInsertID int
-	if err = sr.db.QueryRowxContext(ctx, queries.Crud.Create(queries.SegmentRelation), s.Desc).
-		Scan(&lastInsertID); err != nil {
+func (sr *SegmentRepository) Create(ctx context.Context, s models.Segment) (models.Segment, error) {
+	id, err := sr.db.InsertRow(ctx, queries.Crud.Create(queries.SegmentRelation), s.Desc)
+	if err != nil {
 		return s, errors.Crud.Create(queries.SegmentRelation, err)
 	}
 
-	s.ID = models.ID(lastInsertID)
+	s.ID = id
 	return s, nil
 }
 

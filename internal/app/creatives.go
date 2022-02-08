@@ -41,7 +41,7 @@ func (a *CreativeApp) Slots(ctx context.Context, creativeID models.ID) ([]models
 }
 
 func (a *CreativeApp) AllSlotCreatives(ctx context.Context) ([]models.SlotCreative, error) {
-	return a.storage.Creatives().AllCreativeSlots(ctx)
+	return a.storage.Creatives().AllSlotCreatives(ctx)
 }
 
 func (a *CreativeApp) AddToSlot(ctx context.Context, creativeID, slotID models.ID) error {
