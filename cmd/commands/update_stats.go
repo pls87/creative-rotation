@@ -49,21 +49,34 @@ func (sc *StatsCMD) consumeConversions() (chan stats.Event, chan error) {
 	return conversions, impErrors
 }
 
+// maybe it would be better to handle each channel is separate goroutine...or use done signals....or in some another way.
+// TODO Think and perhaps rewrite
 func (sc *StatsCMD) waitForMessages(i, c chan stats.Event, ie, ce chan error) {
 	var e error
 	var ev stats.Event
-	for {
+	ok := true
+	for ok {
 		select {
-		case e = <-ie:
-			sc.logg.Errorf("error while consuming impression: %s", e)
-		case e = <-ce:
-			sc.logg.Errorf("error while consuming conversion: %s", e)
-		case ev = <-i:
+		case e, ok = <-ie:
+			if ok {
+				sc.logg.Errorf("error while consuming impression: %s", e)
+			}
+		case e, ok = <-ce:
+			if ok {
+				sc.logg.Errorf("error while consuming conversion: %s", e)
+			}
+		case ev, ok = <-i:
+			if !ok {
+				break
+			}
 			e = sc.storage.Stats().TrackImpression(context.Background(), ev.CreativeID, ev.SlotID, ev.SegmentID)
 			if e != nil {
 				sc.logg.Errorf("couln't update impression stats by event %v: %s", ev, e)
 			}
-		case ev = <-c:
+		case ev, ok = <-c:
+			if !ok {
+				break
+			}
 			e = sc.storage.Stats().TrackConversion(context.Background(), ev.CreativeID, ev.SlotID, ev.SegmentID)
 			if e != nil {
 				sc.logg.Errorf("couln't update conversion stats by event %v: %s", ev, e)
