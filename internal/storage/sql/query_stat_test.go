@@ -21,7 +21,7 @@ func (s *StatQuerySuite) TestTrackImpression() {
 	e := s.storage.Stats().TrackImpression(context.Background(), 0, 0, 0)
 	s.ErrorIs(e, ErrEmpty)
 	s.testDB.CheckLastQuery(`INSERT INTO "stats" (impressions, creative_id, slot_id, segment_id) 
-		SELECT * FROM  (VALUES (1, $1, $2, $3)) AS t(impressions, creative_id, slot_id, segment_id)
+		SELECT * FROM  (VALUES (1, 0, 0, 0)) AS t(impressions, creative_id, slot_id, segment_id)
 		WHERE EXISTS (
 			SELECT FROM "slot_creative" sc
 			WHERE  sc.slot_id = t.slot_id
@@ -34,7 +34,7 @@ func (s *StatQuerySuite) TestTrackConversion() {
 	e := s.storage.Stats().TrackConversion(context.Background(), 0, 0, 0)
 	s.ErrorIs(e, ErrEmpty)
 	s.testDB.CheckLastQuery(`INSERT INTO "stats" (conversions, creative_id, slot_id, segment_id) 
-		SELECT * FROM  (VALUES (1, $1, $2, $3)) AS t(conversions, creative_id, slot_id, segment_id)
+		SELECT * FROM  (VALUES (1, 0, 0, 0)) AS t(conversions, creative_id, slot_id, segment_id)
 		WHERE EXISTS (
 			SELECT FROM "slot_creative" sc
 			WHERE  sc.slot_id = t.slot_id

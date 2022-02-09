@@ -4,6 +4,7 @@
 package integration
 
 import (
+	"encoding/json"
 	"net/http"
 	"testing"
 
@@ -38,9 +39,6 @@ func (s *CreativeSlotSuite) SetupTest() {
 	s.slots = append(s.slots, s.entitiesH.New(s.T(), "slot", gofakeit.BuzzWord()))
 }
 
-func (s *CreativeSlotSuite) TearDownTest() {
-}
-
 func (s *CreativeSlotSuite) TestAddToSlot() {
 	s.addToSlot(s.creatives[0].ID, s.slots[1].ID)
 	s.addToSlot(s.creatives[1].ID, s.slots[0].ID)
@@ -50,7 +48,7 @@ func (s *CreativeSlotSuite) TestAddToSlot() {
 	s.NoErrorf(err, "no error expected, but was: %s", err)
 	s.Equalf(http.StatusOK, code, "status %d expected but was %d", http.StatusOK, code)
 	var target map[string][]helpers.SlotCreative
-	s.NoError(helpers.Parse(body, &target))
+	s.NoError(json.Unmarshal(body, &target))
 	slotCreatives, ok := target["slot_creatives"]
 	s.Truef(ok, "slot_creatives key wasn't found in the response")
 	var f1, f2, f3 bool
@@ -72,6 +70,27 @@ func (s *CreativeSlotSuite) TestAddToSlot() {
 	s.Truef(f1, "slot-creative %v - %v wasn't found in the response", s.creatives[0], s.slots[1])
 	s.Truef(f2, "slot-creative %v - %v wasn't found in the response", s.creatives[1], s.slots[0])
 	s.Truef(f3, "slot-creative %v - %v wasn't found in the response", s.creatives[1], s.slots[1])
+}
+
+func (s *CreativeSlotSuite) TestAddDuplicates() {
+	s.addToSlot(s.creatives[0].ID, s.slots[1].ID)
+	code, _, err := s.creativesH.AddToSlot(s.creatives[0].ID, s.slots[1].ID)
+	s.NoErrorf(err, "no error expected, but was: %s", err)
+	s.Equalf(http.StatusConflict, code, "status %d expected but was %d", http.StatusConflict, code)
+}
+
+func (s *CreativeSlotSuite) TestDeleteFromSlot() {
+	s.addToSlot(s.creatives[0].ID, s.slots[0].ID)
+	s.addToSlot(s.creatives[0].ID, s.slots[1].ID)
+	code, _, err := s.creativesH.AddToSlot(s.creatives[0].ID, s.slots[1].ID)
+	s.NoErrorf(err, "no error expected, but was: %s", err)
+	s.Equalf(http.StatusConflict, code, "status %d expected but was %d", http.StatusConflict, code)
+	code, _, err = s.creativesH.RemoveFromSlot(s.creatives[0].ID, s.slots[1].ID)
+	s.NoErrorf(err, "no error expected, but was: %s", err)
+	s.Equalf(http.StatusOK, code, "status %d expected but was %d", http.StatusOK, code)
+	code, _, err = s.creativesH.RemoveFromSlot(s.creatives[0].ID, s.slots[1].ID)
+	s.NoErrorf(err, "no error expected, but was: %s", err)
+	s.Equalf(http.StatusNotFound, code, "status %d expected but was %d", http.StatusNotFound, code)
 }
 
 func (s *CreativeSlotSuite) TestCreativeSlots() {

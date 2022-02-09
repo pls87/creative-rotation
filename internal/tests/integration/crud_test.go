@@ -84,6 +84,6 @@ func (s *CRUDSuite) testCreateEmptyEntity(kind string) {
 	s.Falsef(found, "%s with empty description found", kind)
 }
 
-func TestCreativeCRUD(t *testing.T) {
+func TestCRUD(t *testing.T) {
 	suite.Run(t, new(CRUDSuite))
 }

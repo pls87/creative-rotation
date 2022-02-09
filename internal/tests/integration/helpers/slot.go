@@ -13,7 +13,7 @@ func NewSlotHelper(baseURL string) *SlotHelper {
 	return &SlotHelper{httpHelper: NewHTTPHelper(baseURL)}
 }
 
-func (ch *SlotHelper) Creatives(slotID int) (code int, body []byte, err error) {
+func (sh *SlotHelper) Creatives(slotID int) (code int, body []byte, err error) {
 	url := fmt.Sprintf("/slot/%d/creative", slotID)
-	return ch.httpHelper.Get(url, nil)
+	return sh.httpHelper.Get(url, nil)
 }

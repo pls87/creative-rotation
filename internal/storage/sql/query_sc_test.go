@@ -40,7 +40,8 @@ func (s *SCQuerySuite) TestAllSlotCreatives() {
 func (s *SCQuerySuite) TestAddToSlot() {
 	e := s.storage.Creatives().ToSlot(context.Background(), 0, 0)
 	s.ErrorIs(e, ErrEmpty)
-	s.testDB.CheckLastQuery(`INSERT INTO "slot_creative" (creative_id, slot_id) VALUES ($1, $2)`)
+	s.testDB.CheckLastQuery(`INSERT INTO "slot_creative" (creative_id, slot_id) VALUES ($1, $2) 
+		ON CONFLICT DO NOTHING`)
 }
 
 func (s *SCQuerySuite) TestDeleteFromSlot() {

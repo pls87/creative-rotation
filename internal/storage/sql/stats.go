@@ -32,7 +32,7 @@ func (sr *StatsRepository) TrackConversion(ctx context.Context, crID, slotID, se
 }
 
 func (sr *StatsRepository) updateStats(ctx context.Context, field string, crID, slotID, segID models.ID) error {
-	res, err := sr.db.ExecContext(ctx, queries.Stats.Track(field), crID, slotID, segID)
+	res, err := sr.db.ExecContext(ctx, queries.Stats.Track(field, crID, slotID, segID))
 	if err != nil {
 		return errors.Stats.Track(field, crID, slotID, segID, err)
 	}

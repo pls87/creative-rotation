@@ -13,7 +13,8 @@ func (l *SlotCreativeQueries) GetFor(primary, secondary string) string {
 }
 
 func (l *SlotCreativeQueries) Create() string {
-	return fmt.Sprintf(`INSERT INTO "%s" (creative_id, slot_id) VALUES ($1, $2)`, SlotCreativeRelation)
+	return fmt.Sprintf(`INSERT INTO "%s" (creative_id, slot_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+		SlotCreativeRelation)
 }
 
 func (l *SlotCreativeQueries) Exists() string {
