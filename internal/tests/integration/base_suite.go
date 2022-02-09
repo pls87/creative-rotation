@@ -21,6 +21,7 @@ func (s *BaseSuite) SetupSuite() {
 	if s.baseURL == "" {
 		s.baseURL = "http://127.0.0.1:8081"
 	}
+	s.NoError(s.client.RunFile("./sql/clean.sql"))
 	s.NoError(s.client.Connect())
 }
 
