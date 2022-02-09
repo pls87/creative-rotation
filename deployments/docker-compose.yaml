@@ -40,6 +40,7 @@ services:
       - rabbit
     env_file:
       - db.env
+      - rabbit.env
     environment:
       POSTGRES_HOST: db
       RABBIT_HOST: rabbit

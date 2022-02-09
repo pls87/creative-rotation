@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"time"
 
 	"github.com/pls87/creative-rotation/internal/business"
 	"github.com/pls87/creative-rotation/internal/logger"
@@ -53,6 +54,9 @@ func (a *CreativeApp) RemoveFromSlot(ctx context.Context, creativeID, slotID mod
 }
 
 func (a *CreativeApp) TrackConversion(_ context.Context, conversion models.Conversion) error {
+	if conversion.Time.IsZero() {
+		conversion.Time = time.Now()
+	}
 	return a.stats.Produce(stats.ConversionKey, stats.Event{
 		CreativeID: conversion.CreativeID,
 		SegmentID:  conversion.SegmentID,
@@ -62,6 +66,9 @@ func (a *CreativeApp) TrackConversion(_ context.Context, conversion models.Conve
 }
 
 func (a *CreativeApp) TrackImpression(_ context.Context, impression models.Impression) error {
+	if impression.Time.IsZero() {
+		impression.Time = time.Now()
+	}
 	return a.stats.Produce(stats.ImpressionKey, stats.Event{
 		CreativeID: impression.CreativeID,
 		SegmentID:  impression.SegmentID,

@@ -3,6 +3,9 @@ version: "3"
 services:
   integration-tests:
     image: cr:integration-tests
+    environment:
+      POSTGRES_HOST: db
+      RABBIT_HOST: rabbit
     depends_on:
       - api
       - stats_updater
