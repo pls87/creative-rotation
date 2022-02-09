@@ -6,7 +6,6 @@ package integration
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -14,48 +13,41 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type CreativeCRUDSuite struct {
-	suite.Suite
+type CRUDSuite struct {
+	BaseSuite
 	entities *helpers.EntityHelper
-	baseURL  string
 }
 
-func (s *CreativeCRUDSuite) SetupSuite() {
-	s.baseURL = os.Getenv("CR_API_URL")
-	if s.baseURL == "" {
-		s.baseURL = "http://127.0.0.1:8081"
-	}
+func (s *CRUDSuite) SetupSuite() {
+	s.BaseSuite.SetupSuite()
 	s.entities = helpers.NewEntityHelper(s.baseURL)
 }
 
-func (s *CreativeCRUDSuite) TearDownTest() {
-}
-
-func (s *CreativeCRUDSuite) TestCreateCreative() {
+func (s *CRUDSuite) TestCreateCreative() {
 	s.testCreateEntity("creative")
 }
 
-func (s *CreativeCRUDSuite) TestCreateSlot() {
+func (s *CRUDSuite) TestCreateSlot() {
 	s.testCreateEntity("slot")
 }
 
-func (s *CreativeCRUDSuite) TestCreateSegment() {
+func (s *CRUDSuite) TestCreateSegment() {
 	s.testCreateEntity("segment")
 }
 
-func (s *CreativeCRUDSuite) TestCreateEmptyCreative() {
+func (s *CRUDSuite) TestCreateEmptyCreative() {
 	s.testCreateEmptyEntity("creative")
 }
 
-func (s *CreativeCRUDSuite) TestCreateEmptySlot() {
+func (s *CRUDSuite) TestCreateEmptySlot() {
 	s.testCreateEmptyEntity("slot")
 }
 
-func (s *CreativeCRUDSuite) TestCreateEmptySegment() {
+func (s *CRUDSuite) TestCreateEmptySegment() {
 	s.testCreateEmptyEntity("segment")
 }
 
-func (s *CreativeCRUDSuite) testCreateEntity(kind string) {
+func (s *CRUDSuite) testCreateEntity(kind string) {
 	desc := gofakeit.BuzzWord()
 	entity := s.entities.New(s.T(), kind, desc)
 
@@ -74,7 +66,7 @@ func (s *CreativeCRUDSuite) testCreateEntity(kind string) {
 	s.Truef(found, "created %s %v couldn't be found in storage", kind, entity)
 }
 
-func (s *CreativeCRUDSuite) testCreateEmptyEntity(kind string) {
+func (s *CRUDSuite) testCreateEmptyEntity(kind string) {
 	code, _, err := s.entities.Push(kind, "")
 
 	s.NoErrorf(err, "no error expected but got", err)
@@ -93,5 +85,5 @@ func (s *CreativeCRUDSuite) testCreateEmptyEntity(kind string) {
 }
 
 func TestCreativeCRUD(t *testing.T) {
-	suite.Run(t, new(CreativeCRUDSuite))
+	suite.Run(t, new(CRUDSuite))
 }

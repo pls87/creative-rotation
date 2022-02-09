@@ -5,7 +5,6 @@ package integration
 
 import (
 	"net/http"
-	"os"
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -14,21 +13,17 @@ import (
 )
 
 type CreativeSlotSuite struct {
-	suite.Suite
+	BaseSuite
 	entitiesH  *helpers.EntityHelper
 	creativesH *helpers.CreativeHelper
 	slotsH     *helpers.SlotHelper
-	baseURL    string
 
 	creatives []helpers.Entity
 	slots     []helpers.Entity
 }
 
 func (s *CreativeSlotSuite) SetupSuite() {
-	s.baseURL = os.Getenv("CR_API_URL")
-	if s.baseURL == "" {
-		s.baseURL = "http://127.0.0.1:8081"
-	}
+	s.BaseSuite.SetupSuite()
 	s.entitiesH = helpers.NewEntityHelper(s.baseURL)
 	s.creativesH = helpers.NewCreativeHelper(s.baseURL)
 	s.slotsH = helpers.NewSlotHelper(s.baseURL)

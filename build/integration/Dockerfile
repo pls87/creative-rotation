@@ -1,5 +1,10 @@
 FROM golang:1.16-alpine
 
+RUN apk update && \
+    apk upgrade && \
+    apk add postgresql-client && \
+    rm -rf /var/cache/apk/*
+
 WORKDIR /app
 COPY . .
 
