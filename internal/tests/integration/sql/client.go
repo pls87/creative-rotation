@@ -20,19 +20,19 @@ func env(name, def string) string {
 }
 
 type Client struct {
-	Db *sqlx.DB
+	DB *sqlx.DB
 }
 
 func (c *Client) Connect() error {
 	db, err := sqlx.Connect("postgres", c.connectionString())
 	if err == nil {
-		c.Db = db
+		c.DB = db
 	}
 	return err
 }
 
 func (c *Client) Close() error {
-	return c.Db.Close()
+	return c.DB.Close()
 }
 
 func (c *Client) RunFile(filename string) error {
@@ -43,7 +43,7 @@ func (c *Client) RunFile(filename string) error {
 
 	query := string(content)
 
-	_, err = c.Db.Exec(query)
+	_, err = c.DB.Exec(query)
 	return err
 }
 

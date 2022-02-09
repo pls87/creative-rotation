@@ -77,7 +77,7 @@ func (s *StatsSuite) trackConversion(creativeID, slotID, segmentID int) {
 }
 
 func (s *StatsSuite) getStats(creativeID, slotID, segmentID int) (stats helpers.Stats) {
-	err := s.client.Db.Get(&stats, `SELECT * FROM "stats" WHERE creative_id=$1 AND slot_id=$2 AND segment_id=$3`,
+	err := s.client.DB.Get(&stats, `SELECT * FROM "stats" WHERE creative_id=$1 AND slot_id=$2 AND segment_id=$3`,
 		creativeID, slotID, segmentID)
 	s.NoError(err)
 	return stats

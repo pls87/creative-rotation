@@ -22,7 +22,7 @@ func (l *StatsQueries) Track(field string, cid, slid, segid models.ID) string {
 	return l.updateStats(field, cid, slid, segid)
 }
 
-// Standard sql parameters substitution didn't work for such multi-level query
+// Standard sql parameters substitution didn't work for such multi-level query.
 func (l *StatsQueries) updateStats(field string, cid, slid, segid models.ID) string {
 	return fmt.Sprintf(`INSERT INTO "%s" (%s, creative_id, slot_id, segment_id) 
 		SELECT * FROM  (VALUES (1, %d, %d, %d)) AS t(%s, creative_id, slot_id, segment_id)
