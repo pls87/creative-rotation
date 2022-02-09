@@ -49,8 +49,8 @@ func (sc *StatsCMD) consumeConversions() (chan stats.Event, chan error) {
 	return conversions, impErrors
 }
 
-// maybe it would be better to handle each channel is separate goroutine...or use done signals....or in some another way.
-// TODO Think and perhaps rewrite
+// maybe it would be better to handle each channel is separate goroutine...or use done signals....or in another way.
+// TODO Think and perhaps rewrite.
 func (sc *StatsCMD) waitForMessages(i, c chan stats.Event, ie, ce chan error) {
 	var e error
 	var ev stats.Event
