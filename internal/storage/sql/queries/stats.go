@@ -24,7 +24,7 @@ func (l *StatsQueries) updateStats(field string) string {
 		WHERE EXISTS (
 			SELECT FROM "slot_creative" sc
 			WHERE  sc.slot_id = t.slot_id
-				AND    sc.creative_id =t.creative_id
+				AND    sc.creative_id = t.creative_id
 		)
 		ON CONFLICT (creative_id, slot_id, segment_id) DO UPDATE SET %s = EXCLUDED.%s + 1`,
 		StatsRelation, field, field, field, field)

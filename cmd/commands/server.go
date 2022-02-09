@@ -89,7 +89,6 @@ func newServerCmd() *ServerCMD {
 	cmd := &ServerCMD{
 		RootCMD: &RootCMD{},
 	}
-
 	cmd.Command = &cobra.Command{
 		Use:   "server",
 		Short: "Runs http api for creative rotations app",

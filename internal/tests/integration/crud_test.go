@@ -20,7 +20,7 @@ type CreativeCRUDSuite struct {
 	baseURL  string
 }
 
-func (s *CreativeCRUDSuite) SetupTest() {
+func (s *CreativeCRUDSuite) SetupSuite() {
 	s.baseURL = os.Getenv("CR_API_URL")
 	if s.baseURL == "" {
 		s.baseURL = "http://127.0.0.1:8081"
