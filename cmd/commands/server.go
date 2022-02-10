@@ -35,8 +35,6 @@ func (sc *ServerCMD) onFail() {
 }
 
 func (sc *ServerCMD) shutDown() {
-	<-sc.ctx.Done()
-
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
@@ -49,7 +47,7 @@ func (sc *ServerCMD) shutDown() {
 	}
 
 	if err := sc.server.Stop(ctx); err != nil {
-		sc.logg.Error("failed to stop http internal: " + err.Error())
+		sc.logg.Error("failed to stop http server: " + err.Error())
 	}
 }
 
@@ -72,12 +70,16 @@ func (sc *ServerCMD) Run() {
 		return sc.stats.Init()
 	}, sc.onFail)
 
-	go sc.shutDown()
+	go func() {
+		if err := sc.server.Start(sc.ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			sc.logg.Error("server was unexpectedly stopped: " + err.Error())
+			sc.onFail()
+		}
+	}()
 
-	if err := sc.server.Start(sc.ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		sc.logg.Error("server was unexpectedly stopped: " + err.Error())
-		sc.onFail()
-	}
+	<-sc.ctx.Done()
+
+	sc.shutDown()
 }
 
 func (sc *ServerCMD) Init() {

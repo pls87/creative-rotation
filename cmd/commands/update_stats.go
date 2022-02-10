@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	// init postgres driver.
@@ -30,56 +31,42 @@ func (sc *StatsCMD) onFail() {
 }
 
 func (sc *StatsCMD) consumeImpressions() (chan stats.Event, chan error) {
-	impressions, impErrors, err := sc.stats.Consume("StatsUpdater", stats.ImpressionQueue)
+	impressions, errors, err := sc.stats.Consume("StatsUpdater", stats.ImpressionQueue)
 	if err != nil {
 		sc.logg.Errorf("couldn't consume impressions: %s", err)
 		sc.onFail()
 	}
 
-	return impressions, impErrors
+	return impressions, errors
 }
 
 func (sc *StatsCMD) consumeConversions() (chan stats.Event, chan error) {
-	conversions, impErrors, err := sc.stats.Consume("StatsUpdater", stats.ConversionQueue)
+	conversions, errors, err := sc.stats.Consume("StatsUpdater", stats.ConversionQueue)
 	if err != nil {
 		sc.logg.Errorf("couldn't consume conversions: %s", err)
 		sc.onFail()
 	}
 
-	return conversions, impErrors
+	return conversions, errors
 }
 
-// maybe it would be better to handle each channel is separate goroutine...or use done signals....or in another way.
-// TODO Think and perhaps rewrite.
-func (sc *StatsCMD) waitForMessages(i, c chan stats.Event, ie, ce chan error) {
-	var e error
+func (sc *StatsCMD) waitForMessages(t string, events chan stats.Event, errors chan error,
+	handler func(stats.Event) error) {
 	var ev stats.Event
-	ok := true
-	for ok {
+	var e error
+	for ok := true; ok; {
 		select {
-		case e, ok = <-ie:
-			if ok {
-				sc.logg.Errorf("error while consuming impression: %s", e)
-			}
-		case e, ok = <-ce:
-			if ok {
-				sc.logg.Errorf("error while consuming conversion: %s", e)
-			}
-		case ev, ok = <-i:
+		case e, ok = <-errors:
 			if !ok {
 				break
 			}
-			e = sc.storage.Stats().TrackImpression(context.Background(), ev.CreativeID, ev.SlotID, ev.SegmentID)
-			if e != nil {
-				sc.logg.Errorf("couln't update impression stats by event %v: %s", ev, e)
-			}
-		case ev, ok = <-c:
+			sc.logg.Errorf("error while consuming %s: %s", t, e)
+		case ev, ok = <-events:
 			if !ok {
 				break
 			}
-			e = sc.storage.Stats().TrackConversion(context.Background(), ev.CreativeID, ev.SlotID, ev.SegmentID)
-			if e != nil {
-				sc.logg.Errorf("couln't update conversion stats by event %v: %s", ev, e)
+			if e = handler(ev); e != nil {
+				sc.logg.Errorf("couln't update %s stats by event %v: %s", t, ev, e)
 			}
 		case <-sc.ctx.Done():
 			return
@@ -127,7 +114,26 @@ func (sc *StatsCMD) Run() {
 	i, ie := sc.consumeImpressions()
 	c, ce := sc.consumeConversions()
 
-	sc.waitForMessages(i, c, ie, ce)
+	group := sync.WaitGroup{}
+
+	group.Add(1)
+	go func() {
+		defer group.Done()
+		sc.waitForMessages("impression", i, ie, func(e stats.Event) error {
+			return sc.storage.Stats().TrackImpression(context.Background(), e.CreativeID, e.SlotID, e.SegmentID)
+		})
+	}()
+
+	group.Add(1)
+	go func() {
+		defer group.Done()
+		sc.waitForMessages("conversion", c, ce, func(e stats.Event) error {
+			return sc.storage.Stats().TrackConversion(context.Background(), e.CreativeID, e.SlotID, e.SegmentID)
+		})
+		group.Done()
+	}()
+
+	group.Wait()
 
 	sc.shutDown()
 }
