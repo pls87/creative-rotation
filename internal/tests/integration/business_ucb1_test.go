@@ -114,7 +114,6 @@ type UCB1Suite struct {
 
 func (s *UCB1Suite) run() {
 	start := time.Now()
-	numOfImpressions := 0
 	for time.Since(start) < 10*time.Second {
 		slot := selectSlot()
 		segment := selectSegment(slot + 1)
@@ -128,7 +127,6 @@ func (s *UCB1Suite) run() {
 		time.Sleep(10 * time.Millisecond)
 
 		s.trackImpression(creative, slot+1, segment+1)
-		numOfImpressions++
 		convProb := conversionRates[creative][segment]
 		if rand.Intn(convProb.of) >= convProb.n {
 			continue
@@ -136,7 +134,6 @@ func (s *UCB1Suite) run() {
 		time.Sleep(10 * time.Millisecond)
 		s.trackConversion(creative, slot+1, segment+1)
 	}
-	fmt.Println(numOfImpressions)
 }
 
 func (s *UCB1Suite) TestBusiness() {

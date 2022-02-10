@@ -80,7 +80,6 @@ func (a *CreativeApp) TrackImpression(_ context.Context, impression models.Impre
 func (a *CreativeApp) Next(ctx context.Context, slotID, segmentID models.ID) (models.Creative, error) {
 	next := models.Creative{}
 	stat, err := a.storage.Stats().StatsSlotSegment(ctx, slotID, segmentID)
-	a.logger.Infof("stats for slot=%d & seg=%d: %v", slotID, segmentID, stat)
 	if err != nil {
 		a.logger.WithContext(ctx).Errorf("couldn't get stats to calculate next creative: %s", err)
 	} else {

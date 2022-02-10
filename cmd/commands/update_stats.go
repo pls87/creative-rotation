@@ -120,7 +120,6 @@ func (sc *StatsCMD) Run() {
 	go func() {
 		defer group.Done()
 		sc.waitForMessages("impression", i, ie, func(e stats.Event) error {
-			sc.logg.Info("impression", e)
 			return sc.storage.Stats().TrackImpression(context.Background(), e.CreativeID, e.SlotID, e.SegmentID)
 		})
 	}()
@@ -129,7 +128,6 @@ func (sc *StatsCMD) Run() {
 	go func() {
 		defer group.Done()
 		sc.waitForMessages("conversion", c, ce, func(e stats.Event) error {
-			sc.logg.Info("conversion", e)
 			return sc.storage.Stats().TrackConversion(context.Background(), e.CreativeID, e.SlotID, e.SegmentID)
 		})
 	}()
