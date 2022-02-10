@@ -27,6 +27,6 @@ func (s *BaseSuite) SetupSuite() {
 }
 
 func (s *BaseSuite) TearDownSuite() {
-	s.NoError(s.client.RunFile("./sql/clean.sql"))
+	// s.NoError(s.client.RunFile("./sql/clean.sql"))
 	s.NoError(s.client.Close())
 }
