@@ -7,9 +7,10 @@
 package integration
 
 import (
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
-	"math/rand"
+	"math/big"
 	"net/http"
 	"sync"
 	"sync/atomic"
@@ -18,6 +19,11 @@ import (
 
 	"github.com/pls87/creative-rotation/internal/tests/integration/helpers"
 	"github.com/stretchr/testify/suite"
+)
+
+var (
+	sleepGap = 5 * time.Millisecond
+	testTime = 20 * time.Second
 )
 
 type probability struct {
@@ -30,10 +36,10 @@ var (
 	// CTRs are much higher than in reality but OK for tests purposes
 	conversionRates = map[int][]probability{
 		1: { // lego technic
-			probability{n: 25, of: 100}, // Girl
-			probability{n: 60, of: 100}, // Boy
-			probability{n: 45, of: 100}, // Man
-			probability{n: 5, of: 100},  // Woman
+			probability{n: 30, of: 100}, // Girl
+			probability{n: 80, of: 100}, // Boy
+			probability{n: 50, of: 100}, // Man
+			probability{n: 10, of: 100}, // Woman
 		},
 		2: { // lego friends
 			probability{n: 60, of: 100}, // Girl
@@ -95,12 +101,12 @@ var (
 )
 
 func selectSlot() int {
-	return rand.Intn(4)
+	return getRand(4)
 }
 
 func selectSegment(slot int) int {
 	ar := auditoryRates[slot]
-	r := rand.Intn(100)
+	r := getRand(100)
 	cur := 0
 	for i, v := range ar {
 		if r >= cur && r < cur+v.n {
@@ -111,6 +117,18 @@ func selectSegment(slot int) int {
 	return -1
 }
 
+func conversionRate(stats helpers.Stats) float64 {
+	return float64(stats.Conversions) / float64(stats.Impressions)
+}
+
+func getRand(n int) int {
+	nBig, err := rand.Int(rand.Reader, big.NewInt(int64(n)))
+	if err != nil {
+		panic(err)
+	}
+	return int(nBig.Int64())
+}
+
 type UCB1Suite struct {
 	BaseSuite
 	statsH    *helpers.StatHelper
@@ -119,7 +137,7 @@ type UCB1Suite struct {
 
 func (s *UCB1Suite) run(imp, conv *int64) {
 	start := time.Now()
-	for time.Since(start) < 20*time.Second {
+	for time.Since(start) < testTime {
 		slotIndex := selectSlot()
 		slotID := slotIndex + 1
 		segmentIndex := selectSegment(slotID)
@@ -128,22 +146,22 @@ func (s *UCB1Suite) run(imp, conv *int64) {
 
 		creativeID := s.nextCreative(slotID, segmentID)
 
-		if rand.Intn(overallImpressionRate.of) >= overallImpressionRate.n {
+		if getRand(overallImpressionRate.of) >= overallImpressionRate.n {
 			continue
 		}
 
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(sleepGap)
 
 		s.trackImpression(creativeID, slotID, segmentID)
 		atomic.AddInt64(imp, 1)
 		convProb := conversionRates[creativeID][segmentIndex]
-		if rand.Intn(convProb.of) >= convProb.n {
+		if getRand(convProb.of) >= convProb.n {
 			continue
 		}
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(sleepGap)
 		s.trackConversion(creativeID, slotID, segmentID)
 		atomic.AddInt64(conv, 1)
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(sleepGap)
 	}
 }
 
@@ -189,10 +207,9 @@ func (s *UCB1Suite) TestBusiness() {
 			womanStat = v
 		}
 	}
-	s.Greater(boyStat.Impressions, girlStat.Impressions, "boy stat should be better than girls")
-	s.Greater(boyStat.Impressions, manStat.Impressions, "boy stat should be better than man")
-	s.Greater(manStat.Impressions, womanStat.Impressions, "man stat should be better than woman")
-	s.Greater(girlStat.Impressions, womanStat.Impressions, "girl stat should be better than woman")
+	s.Greater(conversionRate(boyStat), conversionRate(girlStat), "boy stat should be better than girls")
+	s.Greater(conversionRate(boyStat), conversionRate(manStat), "boy stat should be better than man")
+	s.Greater(conversionRate(manStat), conversionRate(womanStat), "man stat should be better than woman")
 }
 
 func (s *UCB1Suite) getStats(where string) (stats []helpers.Stats) {
