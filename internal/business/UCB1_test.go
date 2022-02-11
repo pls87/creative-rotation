@@ -99,7 +99,8 @@ func TestUSB1Playback(t *testing.T) {
 			case "conv":
 				stats = conv(s.creative, stats)
 			case "next":
-				c := NextCreative(stats)
+				c, e := NextCreative(stats)
+				require.NoError(t, e)
 				require.Truef(t, find(s.from, c), "%d wasn't found in %v", c, s.from)
 			}
 			zero, total := aggregate(stats)
@@ -107,6 +108,12 @@ func TestUSB1Playback(t *testing.T) {
 			require.Equal(t, uint64(s.total), total)
 		}
 	}
+}
+
+func TestEmptyStats(t *testing.T) {
+	s := make([]models.Stats, 0, 1)
+	_, err := NextCreative(s)
+	require.ErrorIs(t, err, ErrEmptyStats)
 }
 
 func TestAggregate(t *testing.T) {
@@ -126,8 +133,8 @@ func TestAggregate(t *testing.T) {
 
 	zeroStats, total := aggregate(stats)
 
-	require.Equalf(t, expectedTotal, total, "Impressions are not aggregated correctly")
-	require.Equalf(t, len(expectedZeroStats), len(zeroStats), "Expected %d empty stats but got: %d",
+	require.Equalf(t, expectedTotal, total, "impressions are not aggregated correctly")
+	require.Equalf(t, len(expectedZeroStats), len(zeroStats), "expected %d empty stats but got: %d",
 		len(expectedZeroStats), len(zeroStats))
-	require.Equalf(t, expectedZeroStats, zeroStats, "Empty stats aggregated incorrectly")
+	require.Equalf(t, expectedZeroStats, zeroStats, "empty stats aggregated incorrectly")
 }

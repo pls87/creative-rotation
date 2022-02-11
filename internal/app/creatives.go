@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/pls87/creative-rotation/internal/business"
@@ -81,10 +82,13 @@ func (a *CreativeApp) Next(ctx context.Context, slotID, segmentID models.ID) (mo
 	next := models.Creative{}
 	stat, err := a.storage.Stats().StatsSlotSegment(ctx, slotID, segmentID)
 	if err != nil {
-		a.logger.WithContext(ctx).Errorf("couldn't get stats to calculate next creative: %s", err)
-	} else {
-		next.ID = business.NextCreative(stat)
+		return next, fmt.Errorf("couldn't get stats to calculate next creative: %w", err)
 	}
+	id, e := business.NextCreative(stat)
+	if e != nil {
+		return next, fmt.Errorf("couldn't calculate next creative: %w", e)
+	}
+	next.ID = id
 
-	return next, err
+	return next, nil
 }

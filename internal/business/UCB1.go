@@ -1,6 +1,7 @@
 package business
 
 import (
+	"errors"
 	"math"
 	"math/rand"
 	"time"
@@ -10,11 +11,16 @@ import (
 
 const mistake = 1e-09
 
-func NextCreative(stats []models.Stats) (creativeID models.ID) {
+var ErrEmptyStats = errors.New("couldn't calculate next creative when nothing passed")
+
+func NextCreative(stats []models.Stats) (creativeID models.ID, err error) {
+	if len(stats) == 0 {
+		return 0, ErrEmptyStats
+	}
 	rand.Seed(time.Now().Unix())
 	zeroImp, totalImp := aggregate(stats)
 	if len(zeroImp) > 0 {
-		return zeroImp[rand.Intn(len(zeroImp))].CreativeID //nolint: gosec
+		return zeroImp[rand.Intn(len(zeroImp))].CreativeID, nil //nolint: gosec
 	}
 	var cur float64
 	max := math.Inf(-1)
@@ -30,7 +36,7 @@ func NextCreative(stats []models.Stats) (creativeID models.ID) {
 		}
 		creatives = append(creatives, s.CreativeID)
 	}
-	return creatives[rand.Intn(len(creatives))] //nolint: gosec
+	return creatives[rand.Intn(len(creatives))], nil //nolint: gosec
 }
 
 func valueToMaximize(stats models.Stats, totalImp uint64) float64 {
