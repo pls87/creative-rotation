@@ -110,7 +110,6 @@ func (sc *StatsCMD) Run() {
 
 	defer sc.stats.Dispose()
 
-	// could get all events via one queue but would like to play with rabbit routing
 	i, ie := sc.consumeImpressions()
 	c, ce := sc.consumeConversions()
 
