@@ -35,6 +35,14 @@ func (db *Database) Open(ctx context.Context, cfg config.DBConf) error {
 	return err
 }
 
+func (db *Database) Close() error {
+	if db.DB != nil {
+		return db.DB.Close()
+	}
+
+	return nil
+}
+
 func (db *Database) InsertRow(ctx context.Context, query string, args ...interface{}) (models.ID, error) {
 	var lastInsertID int
 	err := db.QueryRowContext(ctx, query, args...).Scan(&lastInsertID)

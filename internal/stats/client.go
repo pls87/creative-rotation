@@ -83,5 +83,8 @@ func (sc *RabbitClient) Init() (err error) {
 }
 
 func (sc *RabbitClient) Dispose() (err error) {
-	return sc.conn.Close()
+	if sc.conn != nil {
+		return sc.conn.Close()
+	}
+	return nil
 }

@@ -61,12 +61,12 @@ func (sc *ServerCMD) Run() {
 	defer sc.cancel()
 
 	sc.logg.Info("connecting to storage...")
-	sc.Retry(func() error {
+	sc.Retry(sc.ctx, func() error {
 		return sc.storage.Init(sc.ctx)
 	}, sc.onFail)
 
 	sc.logg.Info("connecting to rabbit...")
-	sc.Retry(func() error {
+	sc.Retry(sc.ctx, func() error {
 		return sc.stats.Init()
 	}, sc.onFail)
 

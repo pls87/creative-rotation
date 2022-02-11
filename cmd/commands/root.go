@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -27,15 +28,22 @@ func (rc *RootCMD) Run() {
 	fmt.Println("Noop. Exiting...")
 }
 
-func (rc *RootCMD) Retry(toRetry func() error, onError func()) {
+func (rc *RootCMD) Retry(ctx context.Context, toRetry func() error, onError func()) {
 	var err error
-	for r := retries; r > 0; r-- {
-		if err = toRetry(); err == nil {
-			break
+	timer := time.Tick(retryGap)
+	r := retries
+	for r > 0 {
+		select {
+		case <-timer:
+			if err = toRetry(); err == nil {
+				return
+			}
+			rc.logg.Errorf("failed to connect: %s", err)
+			rc.logg.Info("retrying...")
+			r--
+		case <-ctx.Done():
+			return
 		}
-		rc.logg.Errorf("failed to connect: %s", err)
-		rc.logg.Info("retrying...")
-		time.Sleep(retryGap)
 	}
 
 	if err != nil {
