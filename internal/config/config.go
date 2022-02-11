@@ -47,9 +47,9 @@ func (cfg *Config) bindEnv() {
 	viper.AutomaticEnv()
 	// TODO: this looks strange - need to understand how to unmarshal without listing ENVVARS one-by-one
 	envs := []string{
-		"POSTGRES_HOST", "POSTGRES_PORT", "POSTGRES_DB", "POSTGRES_USER", "POSTGRES_PASSWORD",
-		"STATS_INTERVAL", "API_HOST", "API_PORT",
-		"RABBIT_HOST", "RABBIT_PORT", "RABBITMQ_DEFAULT_USER", "RABBITMQ_DEFAULT_PASS",
+		"POSTGRES_HOST", "POSTGRES_PORT", "POSTGRES_DB", "POSTGRES_USER", "POSTGRES_PASSWORD", // DB
+		"API_HOST", "API_PORT", // API
+		"RABBIT_HOST", "RABBIT_PORT", "RABBITMQ_DEFAULT_USER", "RABBITMQ_DEFAULT_PASS", // RABBIT
 	}
 	for _, key := range envs {
 		_ = viper.BindEnv(key)
