@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
+	mathrand "math/rand"
 	"net/http"
 	"sync"
 	"sync/atomic"
@@ -124,7 +125,7 @@ func conversionRate(stats helpers.Stats) float64 {
 func getRand(n int) int {
 	nBig, err := rand.Int(rand.Reader, big.NewInt(int64(n)))
 	if err != nil {
-		panic(err)
+		return mathrand.Intn(n)
 	}
 	return int(nBig.Int64())
 }
