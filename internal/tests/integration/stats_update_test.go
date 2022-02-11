@@ -37,7 +37,7 @@ func (s *StatsSuite) TestStatsUpdate() {
 
 	s.addToSlot(cr2.ID, sl1.ID)
 	s.trackImpression(cr2.ID, sl1.ID, seg1.ID)
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(10 * time.Millisecond)
 	stats := s.getStats(cr2.ID, sl1.ID, seg1.ID)
 
 	s.Equalf(helpers.Stats{
@@ -49,13 +49,27 @@ func (s *StatsSuite) TestStatsUpdate() {
 	s.addToSlot(cr1.ID, sl2.ID)
 	s.trackConversion(cr1.ID, sl2.ID, seg2.ID)
 
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(10 * time.Millisecond)
 	stats = s.getStats(cr1.ID, sl2.ID, seg2.ID)
 	s.Equalf(helpers.Stats{
 		SlotID: sl2.ID, CreativeID: cr1.ID, SegmentID: seg2.ID,
 		Impressions: 0,
 		Conversions: 1,
 	}, stats, "Conversion number wasn't updated")
+
+	s.trackImpression(cr1.ID, sl2.ID, seg2.ID)
+	s.trackImpression(cr1.ID, sl2.ID, seg2.ID)
+	s.trackImpression(cr1.ID, sl2.ID, seg2.ID)
+	s.trackConversion(cr1.ID, sl2.ID, seg2.ID)
+	s.trackConversion(cr1.ID, sl2.ID, seg2.ID)
+
+	time.Sleep(10 * time.Millisecond)
+	stats = s.getStats(cr1.ID, sl2.ID, seg2.ID)
+	s.Equalf(helpers.Stats{
+		SlotID: sl2.ID, CreativeID: cr1.ID, SegmentID: seg2.ID,
+		Impressions: 3,
+		Conversions: 3,
+	}, stats, "Conversion/impressions numbers are not correct. 3:3 expected")
 }
 
 func (s *StatsSuite) addToSlot(creativeID, slotID int) {
