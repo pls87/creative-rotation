@@ -5,6 +5,7 @@ import (
 
 	"github.com/pls87/creative-rotation/internal/storage/models"
 	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
 
 type step struct {
@@ -13,14 +14,6 @@ type step struct {
 	creative    models.ID
 	from        []models.ID
 	zero, total int
-}
-
-var stats = []models.Stats{
-	{CreativeID: 1, SlotID: 1, SegmentID: 1, Impressions: 0, Conversions: 0},
-	{CreativeID: 3, SlotID: 1, SegmentID: 1, Impressions: 0, Conversions: 0},
-	{CreativeID: 5, SlotID: 1, SegmentID: 1, Impressions: 0, Conversions: 0},
-	{CreativeID: 9, SlotID: 1, SegmentID: 1, Impressions: 0, Conversions: 0},
-	{CreativeID: 2, SlotID: 1, SegmentID: 1, Impressions: 0, Conversions: 0},
 }
 
 var steps = []step{
@@ -55,26 +48,6 @@ var steps = []step{
 	{action: "next", from: []models.ID{1, 9}, zero: 0, total: 9, times: 5},
 }
 
-func imp(creative models.ID, stats []models.Stats) []models.Stats {
-	for i, v := range stats {
-		if v.CreativeID == creative {
-			v.Impressions++
-			stats[i] = v
-		}
-	}
-	return stats
-}
-
-func conv(creative models.ID, stats []models.Stats) []models.Stats {
-	for i, v := range stats {
-		if v.CreativeID == creative {
-			v.Conversions++
-			stats[i] = v
-		}
-	}
-	return stats
-}
-
 func find(ids []models.ID, id models.ID) bool {
 	for _, i := range ids {
 		if i == id {
@@ -84,9 +57,41 @@ func find(ids []models.ID, id models.ID) bool {
 	return false
 }
 
-func TestUSB1Playback(t *testing.T) {
-	stats := stats
-	t.Helper()
+type BusinessSuite struct {
+	suite.Suite
+	stats []models.Stats
+}
+
+func (bs *BusinessSuite) SetupTest() {
+	bs.stats = []models.Stats{
+		{CreativeID: 1, SlotID: 1, SegmentID: 1, Impressions: 0, Conversions: 0},
+		{CreativeID: 3, SlotID: 1, SegmentID: 1, Impressions: 0, Conversions: 0},
+		{CreativeID: 5, SlotID: 1, SegmentID: 1, Impressions: 0, Conversions: 0},
+		{CreativeID: 9, SlotID: 1, SegmentID: 1, Impressions: 0, Conversions: 0},
+		{CreativeID: 2, SlotID: 1, SegmentID: 1, Impressions: 0, Conversions: 0},
+	}
+}
+
+func (bs *BusinessSuite) imp(creative models.ID) {
+	for i, v := range bs.stats {
+		if v.CreativeID == creative {
+			v.Impressions++
+			bs.stats[i] = v
+		}
+	}
+}
+
+func (bs *BusinessSuite) conv(creative models.ID) {
+	for i, v := range bs.stats {
+		if v.CreativeID == creative {
+			v.Conversions++
+			bs.stats[i] = v
+		}
+	}
+}
+
+func (bs *BusinessSuite) TestUSB1Playback() {
+	stats := bs.stats
 	for _, s := range steps {
 		times := 1
 		if s.times > 0 {
@@ -95,19 +100,23 @@ func TestUSB1Playback(t *testing.T) {
 		for i := 0; i < times; i++ {
 			switch s.action {
 			case "imp":
-				stats = imp(s.creative, stats)
+				bs.imp(s.creative)
 			case "conv":
-				stats = conv(s.creative, stats)
+				bs.conv(s.creative)
 			case "next":
 				c, e := NextCreative(stats)
-				require.NoError(t, e)
-				require.Truef(t, find(s.from, c), "%d wasn't found in %v", c, s.from)
+				bs.NoError(e)
+				bs.Truef(find(s.from, c), "%d wasn't found in %v", c, s.from)
 			}
 			zero, total := aggregate(stats)
-			require.Equal(t, s.zero, len(zero))
-			require.Equal(t, uint64(s.total), total)
+			bs.Equal(s.zero, len(zero))
+			bs.Equal(uint64(s.total), total)
 		}
 	}
+}
+
+func TestUSB1(t *testing.T) {
+	suite.Run(t, new(BusinessSuite))
 }
 
 func TestEmptyStats(t *testing.T) {
