@@ -2,10 +2,35 @@
 
 ## Run
 
+To run entire application with additional tools like database adminer use the command below
+
+```bash
+make run #runs components in containers using docker-compose
+```
+
+You can also build docker images in advance by running, but run command will do this as a dependency
+
+```bash
+make build #builds custom images required for running app
+```
+
 To run api and status_updater processes locally you can use the command below
 
 ```bash
-make run #runs api and stats_updater processes on host machine
+make run-local #runs api and stats_updater processes on host machine
+```
+
+You can also build application in advance by running, but run command will do this as a dependency
+
+```bash
+make build-local #builds bin file for api and stats-updater
+```
+
+You can run both application components (API and Stats Updater) separately by using commands below
+
+```bash
+make run-api-local #runs http api on the host machine
+make run-stats-updater-local #runs stats updater on the host machine
 ```
 
 It's recommended to run Postgres and rabbitMQ in docker using the following command before launching api and
@@ -13,12 +38,6 @@ status_updater locally
 
 ```bash
 make run-database-rabbit #runs api and stats_updater processes on host machine
-```
-
-To run entire application with additional tools like database adminer use the command below
-
-```bash
-make run-docker-api-with-tool #runs components in containers using docker-compose
 ```
 
 ## Test
