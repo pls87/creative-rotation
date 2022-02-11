@@ -1,10 +1,14 @@
 //go:build integration
 // +build integration
 
+// this test shouldn't be considered as always green - it uses random functions and probabilities
+// if it fails often it may mean that algorithm doesn't work fine
+// if you need to introduce this into CI than it should be run several times and allow fail once or twice
 package integration
 
 import (
 	"encoding/json"
+	"fmt"
 	"math/rand"
 	"net/http"
 	"sync"
@@ -23,42 +27,43 @@ type probability struct {
 
 var (
 	overallImpressionRate = probability{n: 4, of: 5}
-	conversionRates       = map[int][]probability{
+	// CTRs are much higher than in reality but OK for tests purposes
+	conversionRates = map[int][]probability{
 		1: { // lego technic
-			probability{n: 5, of: 100}, // Girl
-			probability{n: 2, of: 10},  // Boy
-			probability{n: 1, of: 10},  // Man
-			probability{n: 2, of: 100}, // Woman
+			probability{n: 25, of: 100}, // Girl
+			probability{n: 60, of: 100}, // Boy
+			probability{n: 45, of: 100}, // Man
+			probability{n: 5, of: 100},  // Woman
 		},
 		2: { // lego friends
-			probability{n: 2, of: 10},  // Girl
-			probability{n: 5, of: 100}, // Boy
-			probability{n: 2, of: 100}, // Man
-			probability{n: 3, of: 100}, // Woman
+			probability{n: 60, of: 100}, // Girl
+			probability{n: 25, of: 100}, // Boy
+			probability{n: 5, of: 100},  // Man
+			probability{n: 45, of: 100}, // Woman
 		},
 		3: { // kia soul
-			probability{n: 2, of: 100}, // Girl
-			probability{n: 5, of: 10},  // Boy
-			probability{n: 1, of: 10},  // Man
-			probability{n: 3, of: 10},  // Woman
+			probability{n: 5, of: 100},  // Girl
+			probability{n: 10, of: 100}, // Boy
+			probability{n: 20, of: 100}, // Man
+			probability{n: 40, of: 100}, // Woman
 		},
 		4: { // chevrolet tahoe
-			probability{n: 2, of: 100}, // Girl
-			probability{n: 5, of: 100}, // Boy
-			probability{n: 3, of: 10},  // Man
-			probability{n: 1, of: 10},  // Woman
+			probability{n: 5, of: 100},  // Girl
+			probability{n: 10, of: 100}, // Boy
+			probability{n: 40, of: 100}, // Man
+			probability{n: 20, of: 100}, // Woman
 		},
 		5: { // chanel chance
-			probability{n: 5, of: 100}, // Girl
-			probability{n: 1, of: 100}, // Boy
-			probability{n: 1, of: 10},  // Man
-			probability{n: 3, of: 10},  // Woman
+			probability{n: 10, of: 100}, // Girl
+			probability{n: 5, of: 100},  // Boy
+			probability{n: 20, of: 100}, // Man
+			probability{n: 40, of: 100}, // Woman
 		},
 		6: { // dior homme
-			probability{n: 1, of: 100}, // Girl
-			probability{n: 2, of: 100}, // Boy
-			probability{n: 3, of: 10},  // Man
-			probability{n: 1, of: 10},  // Woman
+			probability{n: 5, of: 100},  // Girl
+			probability{n: 10, of: 100}, // Boy
+			probability{n: 40, of: 100}, // Man
+			probability{n: 20, of: 100}, // Woman
 		},
 	}
 	auditoryRates = map[int][]probability{
@@ -69,10 +74,10 @@ var (
 			probability{n: 30, of: 100}, // Woman
 		},
 		2: { // ozon.ru
-			probability{n: 10, of: 100}, // Girl
-			probability{n: 10, of: 100}, // Boy
-			probability{n: 40, of: 100}, // Man
-			probability{n: 40, of: 100}, // Woman
+			probability{n: 25, of: 100}, // Girl
+			probability{n: 25, of: 100}, // Boy
+			probability{n: 25, of: 100}, // Man
+			probability{n: 25, of: 100}, // Woman
 		},
 		3: { // toys.ru
 			probability{n: 30, of: 100}, // Girl
@@ -114,7 +119,7 @@ type UCB1Suite struct {
 
 func (s *UCB1Suite) run(imp, conv *int64) {
 	start := time.Now()
-	for time.Since(start) < 10*time.Second {
+	for time.Since(start) < 20*time.Second {
 		slotIndex := selectSlot()
 		slotID := slotIndex + 1
 		segmentIndex := selectSegment(slotID)
@@ -138,6 +143,7 @@ func (s *UCB1Suite) run(imp, conv *int64) {
 		time.Sleep(10 * time.Millisecond)
 		s.trackConversion(creativeID, slotID, segmentID)
 		atomic.AddInt64(conv, 1)
+		time.Sleep(10 * time.Millisecond)
 	}
 }
 
@@ -156,9 +162,9 @@ func (s *UCB1Suite) TestBusiness() {
 	}()
 	wg.Wait()
 
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(1 * time.Second)
 
-	stats := s.getStats()
+	stats := s.getStats("")
 	var i, c int
 	for _, v := range stats {
 		i += v.Impressions
@@ -166,10 +172,34 @@ func (s *UCB1Suite) TestBusiness() {
 	}
 	s.Equalf(imp, int64(i), "%d impressions was done but %d was tracked", imp, i)
 	s.Equalf(conv, int64(c), "%d conversions was done but %d was tracked", conv, c)
+
+	s.Empty(s.getStats("WHERE impressions=0"))
+
+	stats = s.getStats("WHERE slot_id=2 AND creative_id=1") // ozon & lego technic
+	var boyStat, girlStat, manStat, womanStat helpers.Stats
+	for _, v := range stats {
+		switch v.SegmentID {
+		case 1:
+			girlStat = v
+		case 2:
+			boyStat = v
+		case 3:
+			manStat = v
+		case 4:
+			womanStat = v
+		}
+	}
+	s.Greater(boyStat.Impressions, girlStat.Impressions, "boy stat should be better than girls")
+	s.Greater(boyStat.Impressions, manStat.Impressions, "boy stat should be better than man")
+	s.Greater(manStat.Impressions, womanStat.Impressions, "man stat should be better than woman")
+	s.Greater(girlStat.Impressions, womanStat.Impressions, "girl stat should be better than woman")
 }
 
-func (s *UCB1Suite) getStats() (stats []helpers.Stats) {
-	err := s.client.DB.Select(&stats, `SELECT * FROM "stats"`)
+func (s *UCB1Suite) getStats(where string) (stats []helpers.Stats) {
+	err := s.client.DB.Select(&stats, fmt.Sprintf(`SELECT creative_id, slot_id, segment_id,
+		CASE WHEN impressions is NULL THEN 0 ELSE impressions END as impressions,
+		CASE WHEN conversions is NULL THEN 0 ELSE conversions END as conversions
+		FROM "stats" %s`, where))
 	s.NoError(err)
 	return stats
 }

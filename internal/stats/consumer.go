@@ -8,6 +8,8 @@ import (
 	"github.com/streadway/amqp"
 )
 
+const messagesBuffer = 100
+
 type Consumer interface {
 	Client
 	Consume(tag, queue string) (messages chan Event, errors chan error, err error)
@@ -46,7 +48,7 @@ func (nc *RabbitConsumer) Consume(tag, queue string) (messages chan Event, error
 		return nil, nil, fmt.Errorf("error while consuming messages: %w", err)
 	}
 
-	messages = make(chan Event)
+	messages = make(chan Event, messagesBuffer)
 	errors = make(chan error)
 
 	go func() {
