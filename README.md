@@ -1,18 +1,48 @@
 # Сreative Rotation
+
 ## Run
+
+To run api and status_updater processes locally you can use the command below
+
+```bash
+make run #runs api and stats_updater processes on host machine
+```
+
+It's recommended to run Postgres and rabbitMQ in docker using the following command before launching api and
+status_updater locally
+
+```bash
+make run-database-rabbit #runs api and stats_updater processes on host machine
+```
+
+To run entire application with additional tools like database adminer use the command below
+
 ```bash
 make run-docker-api-with-tool #runs components in containers using docker-compose
 ```
+
 ## Test
+
 ```bash
-make run-docker-integration-test #runs integration tests using docker containers
+make test #runs unit tests
 ```
+
+```bash
+make run-integration-test #runs integration tests using docker containers
+```
+
 ## Components
+
 ### Storage
+
 PostgreSQL database
+
 ### API
-REST API available here: http://127.0.0.1:8080/cr
+
+If you run entire application in docker then REST API available here: http://127.0.0.1:8080/cr
+
 #### Endpoints
+
 ```
 GET     "/creative" - get list of all creatives
 POST    "/creative" - create new creative
@@ -26,11 +56,22 @@ POST    "/slot" - create new slot
 GET     "/segment" - get list of all segments
 POST    "/segment" - create new segment
 ```
+
 ### Swagger UI
-Provides simple UI for API access. Available here: http://127.0.0.1:8080/swaggerui
+
+Provides simple UI for API access. If you run entire application in docker then swagger is available
+here: http://127.0.0.1:8080/swaggerui
+
 ### Stats Updater
+
 Background job to update impression/conversion aggregated statistics
+
 ### Adminer
-Lightweight database admin tool. Available here: http://127.0.0.1:8080/dbadmin
+
+Lightweight database admin tool. If you run entire application in docker then adminer is available
+here: http://127.0.0.1:8080/dbadmin
+
 ## Configuration
-Configuration via both environment variables and config file is supported. Sample configuration file is [here](https://github.com/pls87/creative-rotation/blob/develop/configs/sample.toml)
+
+Configuration via both environment variables and config file is supported. Sample configuration file
+is [here](https://github.com/pls87/creative-rotation/blob/develop/configs/sample.toml)
