@@ -10,11 +10,13 @@ services:
         aliases:
           - adminer
   swagger:
-    build: ../api/swagger/.
+    image: swaggerapi/swagger-ui:latest
     depends_on:
       - api
     environment:
       SWAGGER_JSON: /swagger.yml
+    volumes:
+      - ./conf/swagger.yml:/swagger.yml
     networks:
       main:
         aliases:
@@ -28,7 +30,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./proxy.conf:/etc/nginx/conf.d/default.conf
+      - ./conf/proxy.conf:/etc/nginx/conf.d/default.conf
     networks:
       main:
         aliases:

@@ -3,7 +3,7 @@ schemes:
   - http
 swagger: "2.0"
 info:
-  description: Simple creative targetting sustem using UCB1 learning algorithm
+  description: Simple creative targetting system using UCB1 learning algorithm
   title: Creative Rotation
   version: 0.0.1
 definitions:
