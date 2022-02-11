@@ -5,9 +5,10 @@ package integration
 
 import (
 	"encoding/json"
-	"fmt"
 	"math/rand"
 	"net/http"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -102,7 +103,6 @@ func selectSegment(slot int) int {
 		}
 		cur = cur + v.n
 	}
-	fmt.Println("slot: ", slot, "rand: ", r)
 	return -1
 }
 
@@ -112,13 +112,16 @@ type UCB1Suite struct {
 	creativeH *helpers.CreativeHelper
 }
 
-func (s *UCB1Suite) run() {
+func (s *UCB1Suite) run(imp, conv *int64) {
 	start := time.Now()
 	for time.Since(start) < 10*time.Second {
-		slot := selectSlot()
-		segment := selectSegment(slot + 1)
-		s.GreaterOrEqual(segment, 0)
-		creative := s.nextCreative(segment+1, slot+1)
+		slotIndex := selectSlot()
+		slotID := slotIndex + 1
+		segmentIndex := selectSegment(slotID)
+		s.GreaterOrEqual(segmentIndex, 0)
+		segmentID := segmentIndex + 1
+
+		creativeID := s.nextCreative(slotID, segmentID)
 
 		if rand.Intn(overallImpressionRate.of) >= overallImpressionRate.n {
 			continue
@@ -126,21 +129,52 @@ func (s *UCB1Suite) run() {
 
 		time.Sleep(10 * time.Millisecond)
 
-		s.trackImpression(creative, slot+1, segment+1)
-		convProb := conversionRates[creative][segment]
+		s.trackImpression(creativeID, slotID, segmentID)
+		atomic.AddInt64(imp, 1)
+		convProb := conversionRates[creativeID][segmentIndex]
 		if rand.Intn(convProb.of) >= convProb.n {
 			continue
 		}
 		time.Sleep(10 * time.Millisecond)
-		s.trackConversion(creative, slot+1, segment+1)
+		s.trackConversion(creativeID, slotID, segmentID)
+		atomic.AddInt64(conv, 1)
 	}
 }
 
 func (s *UCB1Suite) TestBusiness() {
-	s.run()
+	wg := sync.WaitGroup{}
+	var imp, conv int64
+	wg.Add(1)
+	go func() {
+		s.run(&imp, &conv)
+		wg.Done()
+	}()
+	wg.Add(1)
+	go func() {
+		s.run(&imp, &conv)
+		wg.Done()
+	}()
+	wg.Wait()
+
+	time.Sleep(100 * time.Millisecond)
+
+	stats := s.getStats()
+	var i, c int
+	for _, v := range stats {
+		i += v.Impressions
+		c += v.Conversions
+	}
+	s.Equalf(imp, int64(i), "%d impressions was done but %d was tracked", imp, i)
+	s.Equalf(conv, int64(c), "%d conversions was done but %d was tracked", conv, c)
 }
 
-func (s *UCB1Suite) nextCreative(segment, slot int) int {
+func (s *UCB1Suite) getStats() (stats []helpers.Stats) {
+	err := s.client.DB.Select(&stats, `SELECT * FROM "stats"`)
+	s.NoError(err)
+	return stats
+}
+
+func (s *UCB1Suite) nextCreative(slot, segment int) int {
 	code, body, err := s.creativeH.Next(slot, segment)
 	s.NoError(err)
 	s.Equal(code, http.StatusOK)
