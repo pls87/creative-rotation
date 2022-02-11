@@ -8,7 +8,7 @@ To run entire application with additional tools like database adminer use the co
 make run #runs components in containers using docker-compose
 ```
 
-You can also build docker images in advance by running, but run command will do this as a dependency
+You can also build docker images in advance by running command below, but run will do this as a dependency
 
 ```bash
 make build #builds custom images required for running app
@@ -20,7 +20,7 @@ To run api and status_updater processes locally you can use the command below
 make run-local #runs api and stats_updater processes on host machine
 ```
 
-You can also build application in advance by running, but run command will do this as a dependency
+You can also build application in advance by running command below, but run will do this as a dependency
 
 ```bash
 make build-local #builds bin file for api and stats-updater
