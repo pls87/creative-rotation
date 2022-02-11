@@ -11,7 +11,6 @@ type Config struct {
 	Log   LoggerConf `mapstructure:"LOGGER"`
 	DB    DBConf     `mapstructure:"DB"`
 	API   APIConf    `mapstructure:"API"`
-	Stats StatsConf  `mapstructure:"STATS"`
 	Queue QueueConf  `mapstructure:"QUEUE"`
 }
 
@@ -25,10 +24,6 @@ type DBConf struct {
 	Name     string `mapstructure:"POSTGRES_DB"`
 	User     string `mapstructure:"POSTGRES_USER"`
 	Password string `mapstructure:"POSTGRES_PASSWORD"`
-}
-
-type StatsConf struct {
-	Interval int `mapstructure:"STATS_INTERVAL"` // in seconds
 }
 
 type QueueConf struct {
@@ -51,22 +46,18 @@ type APIConf struct {
 func (cfg *Config) bindEnv() {
 	viper.AutomaticEnv()
 	// TODO: this looks strange - need to understand how to unmarshal without listing ENVVARS one-by-one
-	_ = viper.BindEnv("POSTGRES_HOST")
-	_ = viper.BindEnv("POSTGRES_PORT")
-	_ = viper.BindEnv("POSTGRES_DB")
-	_ = viper.BindEnv("POSTGRES_USER")
-	_ = viper.BindEnv("POSTGRES_PASSWORD")
-	_ = viper.BindEnv("STATS_INTERVAL")
-	_ = viper.BindEnv("API_HOST")
-	_ = viper.BindEnv("API_PORT")
-	_ = viper.BindEnv("RABBIT_HOST")
-	_ = viper.BindEnv("RABBIT_PORT")
-	_ = viper.BindEnv("RABBITMQ_DEFAULT_USER")
-	_ = viper.BindEnv("RABBITMQ_DEFAULT_PASS")
+	envs := []string{
+		"POSTGRES_HOST", "POSTGRES_PORT", "POSTGRES_DB", "POSTGRES_USER", "POSTGRES_PASSWORD",
+		"STATS_INTERVAL", "API_HOST", "API_PORT",
+		"RABBIT_HOST", "RABBIT_PORT", "RABBITMQ_DEFAULT_USER", "RABBITMQ_DEFAULT_PASS",
+	}
+	for _, key := range envs {
+		_ = viper.BindEnv(key)
+	}
+
 	_ = viper.Unmarshal(&cfg.Log)
 	_ = viper.Unmarshal(&cfg.DB)
 	_ = viper.Unmarshal(&cfg.API)
-	_ = viper.Unmarshal(&cfg.Stats)
 	_ = viper.Unmarshal(&cfg.Queue)
 }
 
@@ -74,7 +65,7 @@ func (cfg *Config) bindFile(cfgFile string) {
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
 		if err := viper.ReadInConfig(); err == nil {
-			_ = viper.Unmarshal(cfg)
+			_ = viper.Unmarshal(&cfg)
 		}
 	}
 }
@@ -84,7 +75,6 @@ func New(cfgFile string) Config {
 		Log:   LoggerConf{Level: "debug"},
 		DB:    DBConf{Port: 5432},
 		API:   APIConf{Port: 8080},
-		Stats: StatsConf{Interval: 1},
 		Queue: QueueConf{Port: 5672},
 	}
 
