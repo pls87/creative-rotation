@@ -7,20 +7,32 @@ LDFLAGS := -X '${REPO}/cmd/commands.Release=develop' -X '${REPO}/cmd/commands.Bu
 build:
 	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd
 
-run-api: build
-	$(BIN) server --config ./configs/sample.toml
-
-run-stats-updater: build
-	$(BIN) update_stats --config ./configs/sample.toml
-
-lint-deps:
-	(which golangci-lint > /dev/null) || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.41.1
+run:
+	$(BIN) server --config ./configs/sample.toml & $(BIN) update_stats --config ./configs/sample.toml
 
 lint: lint-deps
 	golangci-lint run ./...
 
 test:
 	go test -race ./internal/...
+
+lint-deps:
+	(which golangci-lint > /dev/null) || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.41.1
+
+run-database-rabbit: build-img-api build-img-migrations
+	./scripts/run-database-rabbit.sh
+
+run-integration-test: build-img-api build-img-stats build-img-migrations build-img-integration
+	./scripts/run-integration-test.sh
+
+run-docker-api-with-tool: build-img-api build-img-stats build-img-migrations
+	./scripts/run-api-with-tool.sh
+
+run-api: build
+	$(BIN) server --config ./configs/sample.toml
+
+run-stats-updater: build
+	$(BIN) update_stats --config ./configs/sample.toml
 
 build-img-migrations:
 	docker build --no-cache -t cr:migrations migrations/.
@@ -33,14 +45,3 @@ build-img-stats:
 
 build-img-integration:
 	docker build --no-cache -t cr:integration-tests -f build/integration/Dockerfile .
-
-run-database-rabbit:
-	./scripts/run-database-rabbit.sh
-
-run-docker-api-with-tool: build-img-api build-img-stats build-img-migrations
-	./scripts/run-api-with-tool.sh
-
-run-docker-integration-test: build-img-api build-img-stats build-img-migrations build-img-integration
-	./scripts/run-integration-test.sh
-
-.PHONY: build run version test lint
