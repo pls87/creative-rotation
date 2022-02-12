@@ -28,7 +28,7 @@ func (rc *RootCMD) Run() {
 	fmt.Println("Noop. Exiting...")
 }
 
-func (rc *RootCMD) Retry(ctx context.Context, toRetry func() error, onError func()) {
+func (rc *RootCMD) Retry(ctx context.Context, toRetry func() error, notSuccess func()) {
 	var err error
 	timer := time.Tick(retryGap)
 	r := retries
@@ -42,13 +42,14 @@ func (rc *RootCMD) Retry(ctx context.Context, toRetry func() error, onError func
 			rc.logg.Info("retrying...")
 			r--
 		case <-ctx.Done():
+			notSuccess()
 			return
 		}
 	}
 
 	if err != nil {
 		rc.logg.Errorf("number of retries exceeded: %s", err)
-		onError()
+		notSuccess()
 	}
 }
 

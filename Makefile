@@ -22,15 +22,15 @@ build-local:
 	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd
 
 run-local: build-local
-	$(BIN) server --config ./configs/sample.toml & $(BIN) update_stats --config ./configs/sample.toml
+	./scripts/run-local.sh
 
 run-database-rabbit: build-img-api build-img-migrations
 	./scripts/run-database-rabbit.sh
 
-run-api-local: build
+run-api-local: build-local
 	$(BIN) server --config ./configs/sample.toml
 
-run-stats-updater-local: build
+run-stats-updater-local: build-local
 	$(BIN) update_stats --config ./configs/sample.toml
 
 build-img-migrations:
