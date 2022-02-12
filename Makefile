@@ -7,8 +7,7 @@ LDFLAGS := -X '${REPO}/cmd/commands.Release=develop' -X '${REPO}/cmd/commands.Bu
 lint:
 	golangci-lint run ./...
 
-test:
-	go test -v -race -count 100 ./...
+test: test-unit run-integration-test
 
 build: build-img-api build-img-stats build-img-migrations
 
@@ -23,6 +22,9 @@ build-local:
 
 run-local: build-local
 	./scripts/run-local.sh
+
+test-unit:
+	go test -v -race -count 100 ./...
 
 run-database-rabbit: build-img-api build-img-migrations
 	./scripts/run-database-rabbit.sh
