@@ -30,16 +30,23 @@ func (rc *RootCMD) Run() {
 
 func (rc *RootCMD) Retry(ctx context.Context, toRetry func() error, notSuccess func()) {
 	var err error
+	if err = toRetry(); err == nil {
+		return
+	}
+	rc.logg.Errorf("failed to connect: %s", err)
+	rc.logg.Info("retrying...")
+
 	timer := time.Tick(retryGap)
-	r := retries
-	for r > 0 {
+	for r := retries; r > 0; {
 		select {
 		case <-timer:
 			if err = toRetry(); err == nil {
 				return
 			}
 			rc.logg.Errorf("failed to connect: %s", err)
-			rc.logg.Info("retrying...")
+			if r > 0 {
+				rc.logg.Info("retrying...")
+			}
 			r--
 		case <-ctx.Done():
 			notSuccess()
