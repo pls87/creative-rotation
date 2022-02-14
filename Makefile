@@ -12,18 +12,18 @@ lint: lint-deps
 
 test: test-unit run-integration-test
 
-build: build-img-api build-img-stats build-img-migrations
-
-run: build
-	./scripts/run-api-with-tool.sh
-
-run-integration-test: build build-img-integration
-	./scripts/run-integration-test.sh
-
-build-local:
+build:
 	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd
 
-run-local: build-local
+build-containers: build-img-api build-img-stats build-img-migrations
+
+run: build-containers
+	./scripts/run-api-with-tool.sh
+
+run-integration-test: build-containers build-img-integration
+	./scripts/run-integration-test.sh
+
+run-local: build
 	./scripts/run-local.sh
 
 test-unit:
