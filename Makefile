@@ -4,7 +4,10 @@ REPO=github.com/pls87/creative-rotation
 GIT_HASH := $(shell git log --format="%h" -n 1)
 LDFLAGS := -X '${REPO}/cmd/commands.Release=develop' -X '${REPO}/cmd/commands.BuildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S)' -X '${REPO}/cmd/commands.GitHash=$(GIT_HASH)'
 
-lint:
+lint-deps:
+	(which golangci-lint > /dev/null) || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.41.1
+
+lint: lint-deps
 	golangci-lint run ./...
 
 test: test-unit run-integration-test
