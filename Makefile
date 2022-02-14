@@ -32,10 +32,10 @@ test-unit:
 run-database-rabbit: build-img-api build-img-migrations
 	./scripts/run-database-rabbit.sh
 
-run-api-local: build-local
+run-api-local:
 	$(BIN) server --config ./configs/sample.toml
 
-run-stats-updater-local: build-local
+run-stats-updater-local: build
 	$(BIN) update_stats --config ./configs/sample.toml
 
 build-img-migrations:

@@ -12,6 +12,7 @@ RUN go mod download
 
 COPY . .
 
+ARG LDFLAGS
 RUN go build -ldflags "$LDFLAGS" -o ${BIN_FILE} ./cmd
 
 CMD ${BIN_FILE} server
