@@ -42,10 +42,10 @@ build-img-migrations:
 	docker build --no-cache -t cr:migrations migrations/.
 
 build-img-api:
-	docker build -t cr:api -f build/api/Dockerfile .
+	docker build --build-arg=LDFLAGS="$(LDFLAGS)" -t cr:api -f build/api/Dockerfile .
 
 build-img-stats:
-	docker build -t cr:stats -f build/stats/Dockerfile .
+	docker build --build-arg=LDFLAGS="$(LDFLAGS)" -t cr:stats -f build/stats/Dockerfile .
 
 build-img-integration:
 	docker build --no-cache -t cr:integration-tests -f build/integration/Dockerfile .
