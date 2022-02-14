@@ -15,22 +15,22 @@ test: test-unit run-integration-test
 build: build-img-api build-img-stats build-img-migrations
 
 run: build
-	sh ./scripts/run-api-with-tool.sh
+	./scripts/run-api-with-tool.sh
 
 run-integration-test: build build-img-integration
-	sh ./scripts/run-integration-test.sh
+	./scripts/run-integration-test.sh
 
 build-local:
 	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd
 
 run-local: build-local
-	sh ./scripts/run-local.sh
+	./scripts/run-local.sh
 
 test-unit:
 	go test -v -race -count 100 ./...
 
 run-database-rabbit: build-img-api build-img-migrations
-	sh ./scripts/run-database-rabbit.sh
+	./scripts/run-database-rabbit.sh
 
 run-api-local: build-local
 	$(BIN) server --config ./configs/sample.toml
