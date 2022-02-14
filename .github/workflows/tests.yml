@@ -28,6 +28,10 @@ jobs:
         run: make build
         working-directory: .
 
-      - name: test
-        run: make test
+      - name: unit tests
+        run: make test-unit
+        working-directory: .
+
+      - name: integration tests
+        run: make run-integration-test
         working-directory: .
