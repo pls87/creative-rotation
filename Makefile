@@ -27,7 +27,7 @@ run-local: build-local
 	./scripts/run-local.sh
 
 test-unit:
-	go test -v -race -count 100 ./...
+	go test -race -count 100 ./...
 
 run-database-rabbit: build-img-api build-img-migrations
 	./scripts/run-database-rabbit.sh
