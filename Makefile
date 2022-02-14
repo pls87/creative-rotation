@@ -50,4 +50,4 @@ build-img-stats:
 build-img-integration:
 	docker build --no-cache -t cr:integration-tests -f build/integration/Dockerfile .
 
-.PHONY: build run build-local run-local test lint run-api run-stats-updater
+.PHONY: build run build-local run-local test lint run-api run-stats-updater run-integration-test
