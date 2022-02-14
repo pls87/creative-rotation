@@ -17,15 +17,6 @@ type RabbitProducer struct {
 	RabbitClient
 }
 
-func (ap *RabbitProducer) openChannel() (ch *amqp.Channel, err error) {
-	ch, err = ap.conn.Channel()
-	if err != nil {
-		return nil, fmt.Errorf("couldn't open channel: %w", err)
-	}
-
-	return ch, err
-}
-
 func (ap *RabbitProducer) Produce(routingKey string, message Event) (err error) {
 	var body []byte
 	body, err = json.Marshal(message)

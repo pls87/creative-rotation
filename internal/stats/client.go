@@ -1,6 +1,7 @@
 package stats
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/pls87/creative-rotation/internal/config"
@@ -15,6 +16,8 @@ const (
 	ConversionKey   = "new_conversion"
 )
 
+var ErrConnectionIsNotOpened = errors.New("connection is not opened")
+
 type Client interface {
 	Init() error
 	Dispose() error
@@ -23,6 +26,18 @@ type Client interface {
 type RabbitClient struct {
 	conn *amqp.Connection
 	cfg  config.QueueConf
+}
+
+func (sc *RabbitClient) openChannel() (ch *amqp.Channel, err error) {
+	if sc.conn == nil {
+		return nil, fmt.Errorf("couldn't open channel: %w", ErrConnectionIsNotOpened)
+	}
+	ch, err = sc.conn.Channel()
+	if err != nil {
+		return nil, fmt.Errorf("couldn't open channel: %w", err)
+	}
+
+	return ch, err
 }
 
 func (sc *RabbitClient) Init() (err error) {

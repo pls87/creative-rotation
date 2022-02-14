@@ -10,5 +10,4 @@ COPY . .
 
 ENV CGO_ENABLED=0
 
-#RUN go get github.com/stretchr/testify/suite@v1.7.0
 CMD go test -v -tags integration ./internal/tests/integration

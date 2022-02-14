@@ -19,15 +19,6 @@ type RabbitConsumer struct {
 	RabbitClient
 }
 
-func (nc *RabbitConsumer) openChannel() (ch *amqp.Channel, err error) {
-	ch, err = nc.conn.Channel()
-	if err != nil {
-		return nil, fmt.Errorf("couldn't open channel: %w", err)
-	}
-
-	return ch, err
-}
-
 func (nc *RabbitConsumer) Consume(tag, queue string) (messages chan Event, errors chan error, err error) {
 	var ch *amqp.Channel
 	if ch, err = nc.openChannel(); err != nil {
