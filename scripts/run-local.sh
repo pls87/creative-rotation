@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 BIN="./bin/cr"
 
 exec > >(trap "" INT TERM; sed 's/^/server: /') $BIN server --config ./configs/sample.toml &
