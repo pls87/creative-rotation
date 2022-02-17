@@ -8,22 +8,10 @@ To run entire application with additional tools like database adminer use the co
 make run #runs components in containers using docker-compose
 ```
 
-You can also build docker images in advance by running command below, but run will do this as a dependency
-
-```bash
-make build #builds custom images required for running app
-```
-
 To run api and status_updater processes locally you can use the command below
 
 ```bash
 make run-local #runs api and stats_updater processes on host machine
-```
-
-You can also build application in advance by running command below, but run will do this as a dependency
-
-```bash
-make build-local #builds bin file for api and stats-updater
 ```
 
 You can run both application components (API and Stats Updater) separately by using commands below
@@ -43,11 +31,15 @@ make run-database-rabbit #runs api and stats_updater processes on host machine
 ## Test
 
 ```bash
-make test #runs unit tests
+make test-unit #runs unit tests
 ```
 
 ```bash
 make run-integration-test #runs integration tests using docker containers
+```
+
+```bash
+make test #runs all tests
 ```
 
 ## Components
