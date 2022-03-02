@@ -1,0 +1,19 @@
+version: "3"
+
+services:
+  integration-tests:
+    image: cr:integration-tests
+    environment:
+      POSTGRES_HOST: db
+      RABBIT_HOST: rabbit
+    depends_on:
+      - api
+      - stats_updater
+    env_file:
+      - test.env
+      - db.env
+      - rabbit.env
+    networks:
+      main:
+        aliases:
+          - integration_tests

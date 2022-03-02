@@ -1,0 +1,26 @@
+package helpers
+
+const (
+	UnexpectedErrorGetCreatives           = "Unexpected error while getting creatives from storage"
+	UnexpectedErrorGetSlots               = "Unexpected error while getting slots from storage"
+	UnexpectedErrorGetSegments            = "Unexpected error while getting segments from storage"
+	UnexpectedErrorGetSlotCreatives       = "Unexpected error while getting slot-creatives from storage"
+	BadRequestFailedParseCreative         = "failed to parse creative body"
+	BadRequestFailedParseSlot             = "failed to parse slot body"
+	BadRequestFailedParseSegment          = "failed to parse segment body"
+	BadRequestFailedParseConversion       = "failed to parse conversion body"
+	BadRequestFailedParseImpression       = "failed to parse impression body"
+	BadRequestFailedEmptyDescSegment      = "segment description can't be empty"
+	BadRequestFailedEmptyDescCreative     = "creative description can't be empty"
+	BadRequestFailedEmptyDescSlot         = "slot description can't be empty"
+	UnexpectedErrorSavingCreative         = "Unexpected error while saving creative"
+	UnexpectedErrorSavingSlot             = "Unexpected error while saving slot"
+	UnexpectedErrorSavingSegment          = "Unexpected error while saving segment"
+	UnexpectedErrorSavingSlotCreative     = "Unexpected error while saving slot-creative"
+	UnexpectedErrorSavingImpression       = "Unexpected error while handling impression"
+	UnexpectedErrorSavingConversion       = "Unexpected error while handling conversion"
+	ConflictCreativeAlreadyInSlot         = "Creative is already added to slot"
+	NotFoundCreativeNotInSlot             = "Creative is not in slot"
+	UnexpectedErrorDeleteCreativeFromSlot = "Unexpected error while removing creative from slot"
+	UnexpectedErrorGetNextCreative        = "Unexpected error while getting next creative"
+)

@@ -1,0 +1,70 @@
+version: "3"
+
+services:
+  db:
+    image: postgres:latest
+    env_file:
+      - db.env
+    ports:
+      - "${DB_PORT}5432"
+    networks:
+      main:
+        aliases:
+          - db
+  migrations:
+    image: cr:migrations
+    depends_on:
+      - db
+    env_file:
+      - db.env
+    environment:
+      POSTGRES_HOST: db
+    networks:
+      main:
+        aliases:
+          - migrations
+  rabbit:
+    image: rabbitmq:3-alpine
+    ports:
+      - "${RABBIT_PORT}5672"
+    env_file:
+      - rabbit.env
+    networks:
+      main:
+        aliases:
+          - rabbit
+  stats_updater:
+    image: cr:stats
+    depends_on:
+      - db
+      - rabbit
+    env_file:
+      - db.env
+      - rabbit.env
+    environment:
+      POSTGRES_HOST: db
+      RABBIT_HOST: rabbit
+    networks:
+      main:
+        aliases:
+          - stats_updater
+  api:
+    image: cr:api
+    depends_on:
+      - db
+      - migrations
+      - stats_updater
+      - rabbit
+    env_file:
+      - db.env
+      - rabbit.env
+    environment:
+      POSTGRES_HOST: db
+      RABBIT_HOST: rabbit
+    networks:
+      main:
+        aliases:
+          - api
+networks:
+  main:
+    driver: bridge
