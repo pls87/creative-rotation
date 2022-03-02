@@ -29,7 +29,7 @@ run-local: build
 test-unit:
 	go test -race -count 100 ./...
 
-run-database-rabbit: build-img-api build-img-migrations
+run-database-rabbit: build-img-migrations
 	./scripts/run-database-rabbit.sh
 
 run-api-local:
