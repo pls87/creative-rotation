@@ -2,7 +2,6 @@ package commands
 
 import (
 	"context"
-	"os"
 	"os/signal"
 	"sync"
 	"syscall"
@@ -21,36 +20,29 @@ type StatsCMD struct {
 	*RootCMD
 	storage basic.Storage
 	stats   stats.Consumer
-	ctx     context.Context
-	cancel  context.CancelFunc
 }
 
-func (sc *StatsCMD) onFail() {
-	sc.cancel()
-	os.Exit(1)
-}
-
-func (sc *StatsCMD) consumeImpressions() (chan stats.Event, chan error) {
+func (sc *StatsCMD) consumeImpressions() (chan stats.Event, chan error, error) {
 	impressions, errors, err := sc.stats.Consume("StatsUpdater", stats.ImpressionQueue)
 	if err != nil {
 		sc.logg.Errorf("couldn't consume impressions: %s", err)
-		sc.onFail()
+		return nil, nil, err
 	}
 
-	return impressions, errors
+	return impressions, errors, nil
 }
 
-func (sc *StatsCMD) consumeConversions() (chan stats.Event, chan error) {
+func (sc *StatsCMD) consumeConversions() (chan stats.Event, chan error, error) {
 	conversions, errors, err := sc.stats.Consume("StatsUpdater", stats.ConversionQueue)
 	if err != nil {
 		sc.logg.Errorf("couldn't consume conversions: %s", err)
-		sc.onFail()
+		return nil, nil, err
 	}
 
-	return conversions, errors
+	return conversions, errors, nil
 }
 
-func (sc *StatsCMD) waitForMessages(t string, events chan stats.Event, errors chan error,
+func (sc *StatsCMD) waitForMessages(ctx context.Context, t string, events chan stats.Event, errors chan error,
 	handler func(stats.Event) error) {
 	var ev stats.Event
 	var e error
@@ -68,7 +60,7 @@ func (sc *StatsCMD) waitForMessages(t string, events chan stats.Event, errors ch
 			if e = handler(ev); e != nil {
 				sc.logg.Errorf("couln't update %s stats by event %v: %s", t, ev, e)
 			}
-		case <-sc.ctx.Done():
+		case <-ctx.Done():
 			return
 		}
 	}
@@ -85,6 +77,8 @@ func (sc *StatsCMD) shutDown() {
 }
 
 func (sc *StatsCMD) Run() {
+	defer sc.shutDown()
+
 	sc.logg.Info("stats updater process starting...")
 	defer func() {
 		sc.logg.Info("stats updater process finished...")
@@ -93,32 +87,39 @@ func (sc *StatsCMD) Run() {
 	sc.storage = storage.New(sc.cfg.DB)
 	sc.stats = stats.NewConsumer(sc.cfg.Queue)
 
-	sc.ctx, sc.cancel = signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
-	defer sc.cancel()
+	ctx, _ := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 
 	sc.logg.Info("connecting to storage...")
-	sc.Retry(sc.ctx, func() error {
-		return sc.storage.Init(sc.ctx)
-	}, sc.onFail)
-
-	defer sc.storage.Dispose()
+	if err := sc.Retry(ctx, func() error {
+		return sc.storage.Init(ctx)
+	}); err != nil {
+		sc.logg.Errorf("couldn't connect to storage: %v", err)
+		return
+	}
 
 	sc.logg.Info("connecting to rabbit...")
-	sc.Retry(sc.ctx, func() error {
+	if err := sc.Retry(ctx, func() error {
 		return sc.stats.Init()
-	}, sc.onFail)
+	}); err != nil {
+		sc.logg.Errorf("couldn't connect to rabbit: %v", err)
+		return
+	}
 
-	defer sc.stats.Dispose()
-
-	i, ie := sc.consumeImpressions()
-	c, ce := sc.consumeConversions()
+	i, ie, e := sc.consumeImpressions()
+	if e != nil {
+		return
+	}
+	c, ce, e := sc.consumeConversions()
+	if e != nil {
+		return
+	}
 
 	group := sync.WaitGroup{}
 
 	group.Add(1)
 	go func() {
 		defer group.Done()
-		sc.waitForMessages("impression", i, ie, func(e stats.Event) error {
+		sc.waitForMessages(ctx, "impression", i, ie, func(e stats.Event) error {
 			return sc.storage.Stats().TrackImpression(context.Background(), e.CreativeID, e.SlotID, e.SegmentID)
 		})
 	}()
@@ -126,14 +127,12 @@ func (sc *StatsCMD) Run() {
 	group.Add(1)
 	go func() {
 		defer group.Done()
-		sc.waitForMessages("conversion", c, ce, func(e stats.Event) error {
+		sc.waitForMessages(ctx, "conversion", c, ce, func(e stats.Event) error {
 			return sc.storage.Stats().TrackConversion(context.Background(), e.CreativeID, e.SlotID, e.SegmentID)
 		})
 	}()
 
 	group.Wait()
-
-	sc.shutDown()
 }
 
 func (sc *StatsCMD) Init() {

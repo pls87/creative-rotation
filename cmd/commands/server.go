@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"os"
 	"os/signal"
 	"syscall"
 	"time"
@@ -25,13 +24,6 @@ type ServerCMD struct {
 	cr      app.Application
 	stats   stats.Producer
 	server  *httpsrv.Server
-	ctx     context.Context
-	cancel  context.CancelFunc
-}
-
-func (sc *ServerCMD) onFail() {
-	sc.cancel()
-	os.Exit(1)
 }
 
 func (sc *ServerCMD) shutDown() {
@@ -39,47 +31,52 @@ func (sc *ServerCMD) shutDown() {
 	defer cancel()
 
 	if err := sc.storage.Dispose(); err != nil {
-		sc.logg.Error("failed to close storage connection: " + err.Error())
+		sc.logg.Errorf("failed to close storage connection: %v", err)
 	}
 
 	if err := sc.stats.Dispose(); err != nil {
-		sc.logg.Error("failed to close rabbit connection: " + err.Error())
+		sc.logg.Errorf("failed to close rabbit connection: %v", err)
 	}
 
 	if err := sc.server.Stop(ctx); err != nil {
-		sc.logg.Error("failed to stop http server: " + err.Error())
+		sc.logg.Errorf("failed to stop http server: %v", err)
 	}
 }
 
 func (sc *ServerCMD) Run() {
+	defer sc.shutDown()
+
 	sc.storage = storage.New(sc.cfg.DB)
 	sc.stats = stats.NewProducer(sc.cfg.Queue)
 	sc.cr = app.New(sc.logg, sc.storage, sc.stats)
 	sc.server = httpsrv.NewServer(sc.logg, sc.cr, sc.cfg.API)
 
-	sc.ctx, sc.cancel = signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
-	defer sc.cancel()
+	ctx, _ := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 
 	sc.logg.Info("connecting to storage...")
-	sc.Retry(sc.ctx, func() error {
-		return sc.storage.Init(sc.ctx)
-	}, sc.onFail)
+	if err := sc.Retry(ctx, func() error {
+		return sc.storage.Init(ctx)
+	}); err != nil {
+		sc.logg.Errorf("couldn't connect to storage: %v", err)
+		return
+	}
 
 	sc.logg.Info("connecting to rabbit...")
-	sc.Retry(sc.ctx, func() error {
+	if err := sc.Retry(ctx, func() error {
 		return sc.stats.Init()
-	}, sc.onFail)
+	}); err != nil {
+		sc.logg.Errorf("couldn't connect to rabbit: %v", err)
+		return
+	}
 
 	go func() {
-		if err := sc.server.Start(sc.ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			sc.logg.Error("server was unexpectedly stopped: " + err.Error())
-			sc.onFail()
+		if err := sc.server.Start(ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			sc.logg.Errorf("server was unexpectedly stopped: %v", err)
+			return
 		}
 	}()
 
-	<-sc.ctx.Done()
-
-	sc.shutDown()
+	<-ctx.Done()
 }
 
 func (sc *ServerCMD) Init() {
