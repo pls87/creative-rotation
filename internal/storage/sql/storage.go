@@ -5,7 +5,6 @@ import (
 	"database/sql"
 
 	"github.com/jmoiron/sqlx"
-
 	// init postgres driver.
 	_ "github.com/lib/pq"
 	"github.com/pls87/creative-rotation/internal/config"

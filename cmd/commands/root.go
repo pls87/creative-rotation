@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -15,7 +16,11 @@ const (
 	retryGap = 5 * time.Second
 )
 
-var rc *RootCMD
+var (
+	rc                    *RootCMD
+	ErrRetryLimitExceeded = errors.New("Retry limit exceeded")
+	ErrRetryInterrupted   = errors.New("Retry interrupted")
+)
 
 type RootCMD struct {
 	*cobra.Command
@@ -28,10 +33,10 @@ func (rc *RootCMD) Run() {
 	fmt.Println("Noop. Exiting...")
 }
 
-func (rc *RootCMD) Retry(ctx context.Context, toRetry func() error, notSuccess func()) {
+func (rc *RootCMD) Retry(ctx context.Context, toRetry func() error) error {
 	var err error
 	if err = toRetry(); err == nil {
-		return
+		return nil
 	}
 	rc.logg.Errorf("failed to connect: %s", err)
 	rc.logg.Info("retrying...")
@@ -41,7 +46,7 @@ func (rc *RootCMD) Retry(ctx context.Context, toRetry func() error, notSuccess f
 		select {
 		case <-timer:
 			if err = toRetry(); err == nil {
-				return
+				return nil
 			}
 			rc.logg.Errorf("failed to connect: %s", err)
 			if r > 0 {
@@ -49,15 +54,12 @@ func (rc *RootCMD) Retry(ctx context.Context, toRetry func() error, notSuccess f
 			}
 			r--
 		case <-ctx.Done():
-			notSuccess()
-			return
+			return ErrRetryInterrupted
 		}
 	}
 
-	if err != nil {
-		rc.logg.Errorf("number of retries exceeded: %s", err)
-		notSuccess()
-	}
+	rc.logg.Errorf("number of retries exceeded: %s", err)
+	return ErrRetryLimitExceeded
 }
 
 func NewRootCommand() *RootCMD {

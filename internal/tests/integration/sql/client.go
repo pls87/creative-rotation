@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/jmoiron/sqlx"
-
 	// init postgres driver.
 	_ "github.com/lib/pq"
 )
